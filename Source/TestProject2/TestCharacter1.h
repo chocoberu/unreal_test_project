@@ -32,10 +32,13 @@ public:
 	
 	// 스폰시킬 프로젝타일 클래스
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
-		TSubclassOf<class ABullet> ProjectileClass;;
+	TSubclassOf<class ABullet> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+		ABullet* BulletClass;
 public:
-	UPROPERTY(VisibleAnywhere, Category = Camera) USpringArmComponent* SpringArm;
-	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* Camera;
+	UPROPERTY(VisibleAnywhere, Category = Camera) USpringArmComponent* SpringArm; // 스프링암 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* Camera; // 카메라 컴포넌트
 	//UPROPERTY(VisibleAnywhere, Category = Weapon) USkeletalMeshComponent* Weapon;
 
 protected:
@@ -52,5 +55,5 @@ private:
 	void LookUp(float NewAxisValue);
 	void Turn(float NewAxisValue);
 
-	UPROPERTY() class UTestAnimInstance* TestAnim;
+	UPROPERTY() class UTestAnimInstance* TestAnim; // 애님 인스턴스
 };

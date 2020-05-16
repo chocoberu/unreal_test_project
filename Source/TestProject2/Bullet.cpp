@@ -30,15 +30,17 @@ ABullet::ABullet()
 	// 구체의 콜리전 반경을 설정합니다.
 	CollisionComponent->InitSphereRadius(5.0f);
 
-	Mesh->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
+	Mesh->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
 	Mesh->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
 	
 	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
-	ProjectileMovementComponent->InitialSpeed = 3000.0f;
-	ProjectileMovementComponent->MaxSpeed = 3000.0f;
+	ProjectileMovementComponent->InitialSpeed = 4000.0f;
+	ProjectileMovementComponent->MaxSpeed = 4000.0f;
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->Bounciness = 0.3f;
+	
+	InitialLifeSpan = 3.0f;
 }
 
 // Called when the game starts or when spawned
@@ -52,11 +54,6 @@ void ABullet::BeginPlay()
 void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-}
-
-void ABullet::FireInDirection(const FVector & ShootDirection)
-{
-	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+	
 }
 

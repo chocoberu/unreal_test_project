@@ -39,6 +39,13 @@ ATestCharacter1::ATestCharacter1()
 	{
 		GetMesh()->SetAnimInstanceClass(WRAITH_ANIM.Class);
 	}
+	/*static ConstructorHelpers::FClassFinder<ABullet>
+		C_BULLET(TEXT("/Script/TestProject2.Bullet_C"));
+	if (C_BULLET.Succeeded())
+	{
+		TLOG(Warning, TEXT("Success"));
+		ProjectileClass = C_BULLET.Class;
+	}*/
 
 	ArmLengthSpeed = 3.0f;
 	ArmRotationSpeed = 10.0f;
@@ -46,11 +53,11 @@ ATestCharacter1::ATestCharacter1()
 
 	// 테스트 코드
 	ArmLengthTo = 450.f;
-	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bInheritPitch = true;
+	SpringArm->bUsePawnControlRotation = true; // 폰의 제어를 가능하도록 설정
+	SpringArm->bInheritPitch = true; // 피치, 롤, 요의 상속 허용 설정
 	SpringArm->bInheritRoll = true;
 	SpringArm->bInheritYaw = true;
-	SpringArm->bDoCollisionTest = true;
+	SpringArm->bDoCollisionTest = true; // 충돌 테스트를 하도록 설정
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
@@ -69,6 +76,7 @@ void ATestCharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// TargetArmLength에서 ArmLengthTo로 보간한다.
 	SpringArm->TargetArmLength = FMath::FInterpTo(SpringArm->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
 }
 
@@ -102,7 +110,7 @@ void ATestCharacter1::Fire()
 	if (GetMesh()->DoesSocketExist(MuzzleSocket))
 	{
 		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
-		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(GetMesh()->GetSocketLocation(MuzzleSocket), GetCapsuleComponent()->GetRelativeRotation());
+		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket),GetCapsuleComponent()->GetRelativeRotation());
 	}
 }
 

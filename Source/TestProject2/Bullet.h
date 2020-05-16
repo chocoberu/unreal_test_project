@@ -23,14 +23,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// 발사체의 속도를 발사 방향으로 초기화시킵니다.
-	void FireInDirection(const FVector& ShootDirection);
-
 	// 스태틱메시 컴포넌트
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* Mesh;
 
-	// 구체 콜리전 컴포넌트입니다.
+	// 구체 콜리전 컴포넌트
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 		USphereComponent* CollisionComponent;
 
