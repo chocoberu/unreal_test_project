@@ -25,7 +25,14 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void PostInitializeComponents() override;
 
+	UFUNCTION()
+		void Fire();
+	
+	// 스폰시킬 프로젝타일 클래스
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+		TSubclassOf<class ABullet> ProjectileClass;;
 public:
 	UPROPERTY(VisibleAnywhere, Category = Camera) USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* Camera;
@@ -38,4 +45,12 @@ protected:
 	FRotator ArmRotationTo = FRotator::ZeroRotator;
 	float ArmLengthSpeed = 0.0f;
 	float ArmRotationSpeed = 0.0f;
+
+private:
+	void MoveForward(float NewAxisValue);
+	void MoveRight(float NewAxisValue);
+	void LookUp(float NewAxisValue);
+	void Turn(float NewAxisValue);
+
+	UPROPERTY() class UTestAnimInstance* TestAnim;
 };

@@ -2,6 +2,8 @@
 
 
 #include "TestCharacter1.h"
+#include "TestAnimInstance.h"
+#include "Bullet.h"
 
 // Sets default values
 ATestCharacter1::ATestCharacter1()
@@ -52,6 +54,7 @@ ATestCharacter1::ATestCharacter1()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+
 }
 
 // Called when the game starts or when spawned
@@ -74,5 +77,52 @@ void ATestCharacter1::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// 인풋컴포넌트에 이동 관련 함수를 묶는다
+	PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ATestCharacter1::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ATestCharacter1::MoveRight);
+	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ATestCharacter1::LookUp);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ATestCharacter1::Turn);
+	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction(TEXT("Fire"), EInputEvent::IE_Pressed, this, &ATestCharacter1::Fire);
+}
+
+void ATestCharacter1::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	TestAnim = Cast<UTestAnimInstance>(GetMesh()->GetAnimInstance());
+}
+
+void ATestCharacter1::Fire()
+{
+	TLOG(Warning, TEXT("Fire!"));
+	TestAnim->PlayerFireMontage();
+
+	FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
+	if (GetMesh()->DoesSocketExist(MuzzleSocket))
+	{
+		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
+		ABullet* Bullet = GetWorld()->SpawnActor<ABullet>(GetMesh()->GetSocketLocation(MuzzleSocket), GetCapsuleComponent()->GetRelativeRotation());
+	}
+}
+
+void ATestCharacter1::MoveForward(float NewAxisValue)
+{
+	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), NewAxisValue);
+}
+
+void ATestCharacter1::MoveRight(float NewAxisValue)
+{
+	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), NewAxisValue);
+}
+
+void ATestCharacter1::LookUp(float NewAxisValue)
+{
+	AddControllerPitchInput(NewAxisValue); // Pitch가 Y축 회전
+}
+
+void ATestCharacter1::Turn(float NewAxisValue)
+{
+	AddControllerYawInput(NewAxisValue); // Yaw가 Z축 회전
 }
 
