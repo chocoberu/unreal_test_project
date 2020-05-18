@@ -30,7 +30,7 @@ ABullet::ABullet()
 	// 구체의 콜리전 반경을 설정합니다.
 	CollisionComponent->InitSphereRadius(5.0f);
 
-	Mesh->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
+	Mesh->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
 	Mesh->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
 	
 	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);

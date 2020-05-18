@@ -11,19 +11,23 @@ ATestCharacter1::ATestCharacter1()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 스프링암 컴포넌트, 카메라 컴포넌트를 생성
+	// 스프링암 컴포넌트, 카메라 컴포넌트, 파티클 시스템 컴포넌트를 생성
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
+	MuzzleParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("PARTICLE"));
 
 	// 스프링암을 루트 컴포넌트에 붙임
-	SpringArm->SetupAttachment(GetCapsuleComponent());
+	SpringArm->SetupAttachment(RootComponent);
 	Camera->SetupAttachment(SpringArm); // 카메라를 스프링암에 붙임
+	FName MuzzleSocket(TEXT("Muzzle_01"));
+	MuzzleParticle->SetupAttachment(GetMesh(), MuzzleSocket);
 
 	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(42.0f);
 
+	// 메시의 상대 위치, 회전 적용
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -97.0f), FRotator(0.0f, -90.0f, 0.0f));
-	SpringArm->TargetArmLength = 400.0f;
+	SpringArm->TargetArmLength = 400.0f; // 스프링암 설정
 	SpringArm->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
@@ -39,13 +43,13 @@ ATestCharacter1::ATestCharacter1()
 	{
 		GetMesh()->SetAnimInstanceClass(WRAITH_ANIM.Class);
 	}
-	/*static ConstructorHelpers::FClassFinder<ABullet>
-		C_BULLET(TEXT("/Script/TestProject2.Bullet_C"));
-	if (C_BULLET.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UParticleSystem>
+		PT_MUZZLE_FLASH(TEXT("/Game/ParagonWraith/FX/Particles/Abilities/Primary/FX/P_Wraith_Primary_MuzzleFlash.P_Wraith_Primary_MuzzleFlash"));
+	if (PT_MUZZLE_FLASH.Succeeded())
 	{
-		TLOG(Warning, TEXT("Success"));
-		ProjectileClass = C_BULLET.Class;
-	}*/
+		MuzzleParticle->SetTemplate(PT_MUZZLE_FLASH.Object);
+	}
+	MuzzleParticle->bAllowRecycling = true; // Allow Recycling 활성화
 
 	ArmLengthSpeed = 3.0f;
 	ArmRotationSpeed = 10.0f;
@@ -76,7 +80,7 @@ void ATestCharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// TargetArmLength에서 ArmLengthTo로 보간한다.
+	// 스프링 암의 TargetArmLength에서 ArmLengthTo로 보간한다.
 	SpringArm->TargetArmLength = FMath::FInterpTo(SpringArm->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
 }
 
@@ -109,11 +113,14 @@ void ATestCharacter1::Fire()
 	FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
 	if (GetMesh()->DoesSocketExist(MuzzleSocket))
 	{
+		MuzzleParticle->Activate(true); // 파티클 시스템 활성화
 		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
 		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket),GetCapsuleComponent()->GetRelativeRotation());
 	}
 }
 
+
+// 입력 관련 함수
 void ATestCharacter1::MoveForward(float NewAxisValue)
 {
 	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), NewAxisValue);

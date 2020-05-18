@@ -56,4 +56,5 @@ private:
 	void Turn(float NewAxisValue);
 
 	UPROPERTY() class UTestAnimInstance* TestAnim; // 애님 인스턴스
+	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* MuzzleParticle; // 파티클 시스템
 };
