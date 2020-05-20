@@ -12,7 +12,7 @@ ABullet::ABullet()
 
 	// 구체를 단순 콜리전 표현으로 사용합니다.
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PROJECTMOVEMENT"));
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	// 메시 초기화
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MESH"));
 
@@ -28,7 +28,9 @@ ABullet::ABullet()
 	RootComponent = CollisionComponent;
 	Mesh->SetupAttachment(RootComponent);
 	// 구체의 콜리전 반경을 설정합니다.
-	CollisionComponent->InitSphereRadius(5.0f);
+	CollisionComponent->InitSphereRadius(10.0f);
+	CollisionComponent->SetCollisionProfileName(TEXT("Bullet"));
+	CollisionComponent->OnComponentHit.AddDynamic(this, &ABullet::OnHit);
 
 	Mesh->SetRelativeScale3D(FVector(20.0f, 20.0f, 20.0f));
 	Mesh->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
@@ -39,8 +41,9 @@ ABullet::ABullet()
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->Bounciness = 0.3f;
+	ProjectileMovementComponent->Velocity = GetActorForwardVector() * ProjectileMovementComponent->InitialSpeed; // 총알의 속도를 조절
 	
-	InitialLifeSpan = 3.0f;
+	InitialLifeSpan = 2.0f; // 2초 후 소멸
 }
 
 // Called when the game starts or when spawned
@@ -55,5 +58,13 @@ void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+}
+
+void ABullet::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPrimitiveComponent * OtherComponent, FVector NormalImpulse, const FHitResult & Hit)
+{
+	// 총알의 속도를 0으로 설정
+	ProjectileMovementComponent->Velocity = FVector(0.0f, 0.0f, 0.0f);
+	SetActorEnableCollision(false);
+	TLOG(Warning, *OtherActor->GetFName().ToString());
 }
 

@@ -24,6 +24,8 @@ ATestCharacter1::ATestCharacter1()
 
 	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(42.0f);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("TCharacter")); // 콜리전 프리셋을 TCharacter로 변경
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ATestCharacter1::OnHit);
 
 	// 메시의 상대 위치, 회전 적용
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -97.0f), FRotator(0.0f, -90.0f, 0.0f));
@@ -66,6 +68,7 @@ ATestCharacter1::ATestCharacter1()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 
+	PlayerDirection = GetActorForwardVector();
 }
 
 // Called when the game starts or when spawned
@@ -113,10 +116,17 @@ void ATestCharacter1::Fire()
 	FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
 	if (GetMesh()->DoesSocketExist(MuzzleSocket))
 	{
+		//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
+		//SetActorRotation(TempRotator);
 		MuzzleParticle->Activate(true); // 파티클 시스템 활성화
 		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
 		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket),GetCapsuleComponent()->GetRelativeRotation());
 	}
+}
+
+void ATestCharacter1::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPrimitiveComponent * OtherComponent, FVector NormalImpulse, const FHitResult & Hit)
+{
+	//
 }
 
 
@@ -139,5 +149,8 @@ void ATestCharacter1::LookUp(float NewAxisValue)
 void ATestCharacter1::Turn(float NewAxisValue)
 {
 	AddControllerYawInput(NewAxisValue); // Yaw가 Z축 회전
+	PlayerDirection = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X); // PlayerDirection에 카메라 방향을 저장
+	//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
+	//SetActorRotation(TempRotator);
 }
 

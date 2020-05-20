@@ -34,4 +34,7 @@ public:
 	// 프로젝타일 무브먼트 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		class UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 };
