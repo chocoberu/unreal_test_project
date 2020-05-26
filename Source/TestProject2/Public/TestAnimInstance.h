@@ -17,6 +17,7 @@ public:
 	UTestAnimInstance();
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void PlayerFireMontage();
+	void SetDeadAnim() { IsDead = true;  }
 	
 private:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))

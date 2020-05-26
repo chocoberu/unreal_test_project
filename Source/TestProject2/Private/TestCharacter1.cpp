@@ -25,7 +25,6 @@ ATestCharacter1::ATestCharacter1()
 	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(42.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("TCharacter")); // 콜리전 프리셋을 TCharacter로 변경
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ATestCharacter1::OnHit);
 
 	// 메시의 상대 위치, 회전 적용
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -97.0f), FRotator(0.0f, -90.0f, 0.0f));
@@ -40,7 +39,7 @@ ATestCharacter1::ATestCharacter1()
 	}
 
 	static ConstructorHelpers::FClassFinder<UAnimInstance>
-		WRAITH_ANIM(TEXT("/Game/ParagonWraith/Characters/Heroes/Wraith/Wraith_AnimBlueprint.Wraith_AnimBlueprint_C"));
+		WRAITH_ANIM(TEXT("/Game/ParagonWraith/Characters/Heroes/Wraith/Wraith_AnimTest.Wraith_AnimTest_C"));
 	if (WRAITH_ANIM.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(WRAITH_ANIM.Class);
@@ -58,17 +57,10 @@ ATestCharacter1::ATestCharacter1()
 	GetCharacterMovement()->JumpZVelocity = 700.0f;
 
 	// 테스트 코드
-	ArmLengthTo = 450.f;
-	SpringArm->bUsePawnControlRotation = true; // 폰의 제어를 가능하도록 설정
-	SpringArm->bInheritPitch = true; // 피치, 롤, 요의 상속 허용 설정
-	SpringArm->bInheritRoll = true;
-	SpringArm->bInheritYaw = true;
-	SpringArm->bDoCollisionTest = true; // 충돌 테스트를 하도록 설정
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
-
 	PlayerDirection = GetActorForwardVector();
+
+	SetCameraMode(ECameraMode::GTA);
+	HP = 100.0f;
 }
 
 // Called when the game starts or when spawned
@@ -78,11 +70,50 @@ void ATestCharacter1::BeginPlay()
 	
 }
 
+void ATestCharacter1::SetCameraMode(ECameraMode NewCameraMode)
+{
+	CurrentCameraMode = NewCameraMode;
+	switch (CurrentCameraMode)
+	{
+	case ECameraMode::DIABLO:
+		SpringArm->TargetArmLength = 800.0f;
+		SpringArm->SetRelativeRotation(FRotator(-45.0f, 0.0f, 0.0f));
+		SpringArm->bUsePawnControlRotation = false;
+		SpringArm->bInheritPitch = false;
+		SpringArm->bInheritRoll = false;
+		SpringArm->bInheritYaw = false;
+		SpringArm->bDoCollisionTest = false;
+		bUseControllerRotationYaw = true;
+		break;
+	case ECameraMode::GTA:
+		ArmLengthTo = 450.f;
+		SpringArm->bUsePawnControlRotation = true;
+		SpringArm->bInheritPitch = true;
+		SpringArm->bInheritRoll = true;
+		SpringArm->bInheritYaw = true;
+		SpringArm->bDoCollisionTest = true;
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+		break;
+	}
+}
+
 // Called every frame
 void ATestCharacter1::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	switch (CurrentCameraMode)
+	{
+	case ECameraMode::DIABLO:
+		if (DirectionToMove.SizeSquared() > 0.0f)
+		{
+			GetController()->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
+			AddMovementInput(DirectionToMove);
+		}
+		break;
+	}
 	// 스프링 암의 TargetArmLength에서 ArmLengthTo로 보간한다.
 	SpringArm->TargetArmLength = FMath::FInterpTo(SpringArm->TargetArmLength, ArmLengthTo, DeltaTime, ArmLengthSpeed);
 }
@@ -121,36 +152,79 @@ void ATestCharacter1::Fire()
 		MuzzleParticle->Activate(true); // 파티클 시스템 활성화
 		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
 		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket),GetCapsuleComponent()->GetRelativeRotation());
+		BulletClass->SetOwner(this);
+		BulletClass->SetOwnerController(this);
 	}
 }
 
-void ATestCharacter1::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPrimitiveComponent * OtherComponent, FVector NormalImpulse, const FHitResult & Hit)
+float ATestCharacter1::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
-	//
+	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	TLOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
+
+	SetDamage(FinalDamage);
+	return FinalDamage;
 }
 
 
 // 입력 관련 함수
 void ATestCharacter1::MoveForward(float NewAxisValue)
 {
-	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), NewAxisValue);
+	switch (CurrentCameraMode)
+	{
+	case ECameraMode::GTA:
+		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X), NewAxisValue);
+		break;
+	case ECameraMode::DIABLO:
+		DirectionToMove.X = NewAxisValue;
+		break;
+	}
 }
 
 void ATestCharacter1::MoveRight(float NewAxisValue)
 {
-	AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), NewAxisValue);
+	switch (CurrentCameraMode)
+	{
+	case ECameraMode::GTA:
+		AddMovementInput(FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::Y), NewAxisValue);
+		break;
+	case ECameraMode::DIABLO:
+		DirectionToMove.Y = NewAxisValue;
+		break;
+	}
 }
 
 void ATestCharacter1::LookUp(float NewAxisValue)
 {
-	AddControllerPitchInput(NewAxisValue); // Pitch가 Y축 회전
+	switch (CurrentCameraMode)
+	{
+	case ECameraMode::GTA:
+		AddControllerPitchInput(NewAxisValue); // Pitch가 Y축 회전
+		break;
+	}
 }
 
 void ATestCharacter1::Turn(float NewAxisValue)
 {
-	AddControllerYawInput(NewAxisValue); // Yaw가 Z축 회전
+	switch (CurrentCameraMode)
+	{
+	case ECameraMode::GTA:
+		AddControllerYawInput(NewAxisValue); // Yaw가 Z축 회전
+		break;
+	}
 	PlayerDirection = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X); // PlayerDirection에 카메라 방향을 저장
 	//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
 	//SetActorRotation(TempRotator);
+}
+
+void ATestCharacter1::SetDamage(float Damage)
+{
+	HP -= Damage;
+
+	if (HP <= 0.0f)
+	{
+		TestAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+	}
 }
 

@@ -16,9 +16,11 @@ UTestAnimInstance::UTestAnimInstance()
 void UTestAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+
 }
 
 void UTestAnimInstance::PlayerFireMontage()
 {
+	TCHECK(!IsDead);
 	Montage_Play(FireMontage, 1.0f);
 }

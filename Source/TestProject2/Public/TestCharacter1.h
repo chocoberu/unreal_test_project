@@ -19,6 +19,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	enum class ECameraMode
+	{
+		GTA,
+		DIABLO
+	};
+	void SetCameraMode(ECameraMode NewCameraMode);
+	ECameraMode CurrentCameraMode;
+	FVector DirectionToMove = FVector::ZeroVector;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -37,8 +46,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 		ABullet* BulletClass;
 	
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 public:
 	UPROPERTY(VisibleAnywhere, Category = Camera) USpringArmComponent* SpringArm; // 스프링암 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* Camera; // 카메라 컴포넌트
@@ -62,4 +70,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* MuzzleParticle; // 파티클 시스템
 	
 	UPROPERTY(VisibleAnywhere, Category = TEST) FVector PlayerDirection;
+	UPROPERTY(VisibleAnywhere, Category = HP) float HP;
+	void SetDamage(float Damage);
 };
