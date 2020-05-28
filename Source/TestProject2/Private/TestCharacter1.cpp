@@ -23,7 +23,7 @@ ATestCharacter1::ATestCharacter1()
 	MuzzleParticle->SetupAttachment(GetMesh(), MuzzleSocket);
 
 	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
-	GetCapsuleComponent()->SetCapsuleRadius(42.0f);
+	GetCapsuleComponent()->SetCapsuleRadius(30.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("TCharacter")); // 콜리전 프리셋을 TCharacter로 변경
 
 	// 메시의 상대 위치, 회전 적용
@@ -154,6 +154,7 @@ void ATestCharacter1::Fire()
 		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket),GetCapsuleComponent()->GetRelativeRotation());
 		BulletClass->SetOwner(this);
 		BulletClass->SetOwnerController(this);
+		TLOG(Warning, TEXT("muzzle location : %s"), *GetMesh()->GetSocketLocation(MuzzleSocket).ToString()); // 머즐 소켓의 위치 확인용 로그
 	}
 }
 

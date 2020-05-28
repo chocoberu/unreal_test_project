@@ -19,7 +19,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	enum class ECameraMode
+	enum class ECameraMode // 카메라 모드
 	{
 		GTA,
 		DIABLO
@@ -39,18 +39,13 @@ public:
 	UFUNCTION()
 		void Fire();
 	
-	// 스폰시킬 프로젝타일 클래스
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
-	TSubclassOf<class ABullet> ProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
-		ABullet* BulletClass;
+	UPROPERTY(EditDefaultsOnly, Category = Projectile) // 총알 클래스 
+		class ABullet* BulletClass;
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 public:
 	UPROPERTY(VisibleAnywhere, Category = Camera) USpringArmComponent* SpringArm; // 스프링암 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* Camera; // 카메라 컴포넌트
-	//UPROPERTY(VisibleAnywhere, Category = Weapon) USkeletalMeshComponent* Weapon;
 
 protected:
 
@@ -67,9 +62,9 @@ private:
 	void Turn(float NewAxisValue);
 
 	UPROPERTY() class UTestAnimInstance* TestAnim; // 애님 인스턴스
-	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* MuzzleParticle; // 파티클 시스템
+	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* MuzzleParticle; // 총알 발사 시의 파티클 시스템
 	
-	UPROPERTY(VisibleAnywhere, Category = TEST) FVector PlayerDirection;
+	UPROPERTY(VisibleAnywhere, Category = TEST) FVector PlayerDirection; // 플레이어가 바라보는 방향
 	UPROPERTY(VisibleAnywhere, Category = HP) float HP;
 	void SetDamage(float Damage);
 };

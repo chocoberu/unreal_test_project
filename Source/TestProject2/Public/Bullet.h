@@ -41,4 +41,5 @@ public:
 	void SetOwnerController(class ATestCharacter1* TCharacter);
 private:
 	AController* OwnerController;
+	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* BulletParticle; // 파티클 시스템
 };

@@ -16,6 +16,7 @@ ABullet::ABullet()
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	// 메시 초기화
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MESH"));
+	BulletParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("BulletParticle"));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>
 		ST_BULLET(TEXT("/Game/ParagonWraith/FX/Meshes/Heroes/SM_Wraith_SimpleUltBullet.SM_Wraith_SimpleUltBullet"));
@@ -24,10 +25,19 @@ ABullet::ABullet()
 	{
 		Mesh->SetStaticMesh(ST_BULLET.Object);
 	}
+	static ConstructorHelpers::FObjectFinder<UParticleSystem>
+		PT_BULLET(TEXT("/Game/ParagonWraith/FX/Particles/Abilities/ScopedShot/FX/P_Wraith_Sniper_Projectile.P_Wraith_Sniper_Projectile"));
+	if (PT_BULLET.Succeeded())
+	{
+		BulletParticle->SetTemplate(PT_BULLET.Object);
+	}
+	BulletParticle->bAllowRecycling = true;
 
 	// 루트 컴포넌트를 콜리전 컴포넌트로 설정합니다.
 	RootComponent = CollisionComponent;
 	Mesh->SetupAttachment(RootComponent);
+	BulletParticle->SetupAttachment(RootComponent);
+	BulletParticle->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
 	// 구체의 콜리전 반경을 설정합니다.
 	CollisionComponent->InitSphereRadius(10.0f);
 	CollisionComponent->SetCollisionProfileName(TEXT("Bullet"));
@@ -45,6 +55,7 @@ ABullet::ABullet()
 	ProjectileMovementComponent->Velocity = GetActorForwardVector() * ProjectileMovementComponent->InitialSpeed; // 총알의 속도를 조절
 	
 	InitialLifeSpan = 2.0f; // 2초 후 소멸
+	BulletParticle->SetActive(true);
 }
 
 // Called when the game starts or when spawned
@@ -65,7 +76,8 @@ void ABullet::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPr
 {
 	// 총알의 속도를 0으로 설정
 	ProjectileMovementComponent->Velocity = FVector(0.0f, 0.0f, 0.0f);
-	SetActorEnableCollision(false);
+	SetActorEnableCollision(false); // 충돌 비활성화
+	BulletParticle->SetActive(false); // 파티클 시스템 비활성화
 	TLOG(Warning, *OtherActor->GetFName().ToString());
 	Mesh->SetHiddenInGame(true); // 메시를 숨김
 	FDamageEvent DamageEvent;
