@@ -2,6 +2,7 @@
 
 
 #include "TestEnemyCharacter.h"
+#include "TestEnemyAnimInstance.h"
 
 // Sets default values
 ATestEnemyCharacter::ATestEnemyCharacter()
@@ -13,11 +14,20 @@ ATestEnemyCharacter::ATestEnemyCharacter()
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		SK_WARRIOR(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
 
+	static ConstructorHelpers::FClassFinder<UAnimInstance>
+		WARRIOR_ANIM(TEXT("/Game/Animations/WarriorEnemyBlueprint.WarriorEnemyBlueprint_C"));
+	if (WARRIOR_ANIM.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(WARRIOR_ANIM.Class);
+	}
+
 	if (SK_WARRIOR.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(SK_WARRIOR.Object);
 	}
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FRotator(0.0f, -90.0f, 0.0f));
+
+	IsAttacking = false;
 }
 
 // Called when the game starts or when spawned
@@ -39,5 +49,32 @@ void ATestEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ATestEnemyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	auto AnimInstance = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
+	TCHECK(AnimInstance != nullptr);
+
+	AnimInstance->OnMontageEnded.AddDynamic(this, &ATestEnemyCharacter::OnAttackMontageEnded);
+}
+
+void ATestEnemyCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterrupted)
+{
+	TCHECK(IsAttacking);
+	IsAttacking = false;
+}
+
+void ATestEnemyCharacter::Attack()
+{
+	if (IsAttacking)
+		return;
+
+	auto AnimInstance = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance == nullptr)
+		return;
+	//AnimInstance-
+	IsAttacking = true;
 }
 

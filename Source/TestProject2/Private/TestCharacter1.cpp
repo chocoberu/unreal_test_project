@@ -39,7 +39,7 @@ ATestCharacter1::ATestCharacter1()
 	}
 
 	static ConstructorHelpers::FClassFinder<UAnimInstance>
-		WRAITH_ANIM(TEXT("/Game/ParagonWraith/Characters/Heroes/Wraith/Wraith_AnimTest.Wraith_AnimTest_C"));
+		WRAITH_ANIM(TEXT("/Game/Animations/Wraith_AnimTest.Wraith_AnimTest_C"));
 	if (WRAITH_ANIM.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(WRAITH_ANIM.Class);
@@ -61,6 +61,7 @@ ATestCharacter1::ATestCharacter1()
 
 	SetCameraMode(ECameraMode::GTA);
 	HP = 100.0f;
+	IsAttacking = false;
 }
 
 // Called when the game starts or when spawned
@@ -137,13 +138,40 @@ void ATestCharacter1::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	TestAnim = Cast<UTestAnimInstance>(GetMesh()->GetAnimInstance());
+	TCHECK(TestAnim != nullptr);
+	TestAnim->OnMontageEnded.AddDynamic(this, &ATestCharacter1::OnFireMontageEnded);
+	TestAnim->OnFireProjectile.AddLambda([this]() -> void {
+
+		FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
+		if (GetMesh()->DoesSocketExist(MuzzleSocket))
+		{
+			//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
+			//SetActorRotation(TempRotator);
+			MuzzleParticle->Activate(true); // 파티클 시스템 활성화
+			// 해당 위치에서 플레이어의 회전방향으로 총알 생성
+			BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket), GetMesh()->GetSocketRotation(MuzzleSocket));
+			BulletClass->SetOwner(this);
+			BulletClass->SetOwnerController(this);
+			BulletClass->SetFireDirection(GetMesh()->GetSocketRotation(MuzzleSocket).Vector());
+			//TLOG(Warning, TEXT("muzzle location : %s"), *GetMesh()->GetSocketLocation(MuzzleSocket).ToString()); // 머즐 소켓의 위치 확인용 로그
+			//IsAttacking = true;
+		}
+		});
 }
 
 void ATestCharacter1::Fire()
 {
+	// TODO : 총알 발사 방향 지정 필요 
+	if (IsAttacking)
+		return;
 	TLOG(Warning, TEXT("Fire!"));
 	TestAnim->PlayerFireMontage();
+	//TestAnim->SetI
 
+}
+
+void ATestCharacter1::FireProjectile()
+{
 	FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
 	if (GetMesh()->DoesSocketExist(MuzzleSocket))
 	{
@@ -151,10 +179,12 @@ void ATestCharacter1::Fire()
 		//SetActorRotation(TempRotator);
 		MuzzleParticle->Activate(true); // 파티클 시스템 활성화
 		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
-		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket),GetCapsuleComponent()->GetRelativeRotation());
+		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket), GetMesh()->GetSocketRotation(MuzzleSocket));
 		BulletClass->SetOwner(this);
 		BulletClass->SetOwnerController(this);
-		TLOG(Warning, TEXT("muzzle location : %s"), *GetMesh()->GetSocketLocation(MuzzleSocket).ToString()); // 머즐 소켓의 위치 확인용 로그
+		BulletClass->SetFireDirection(GetMesh()->GetSocketRotation(MuzzleSocket).Vector());
+		//TLOG(Warning, TEXT("muzzle location : %s"), *GetMesh()->GetSocketLocation(MuzzleSocket).ToString()); // 머즐 소켓의 위치 확인용 로그
+		//IsAttacking = true;
 	}
 }
 
@@ -216,6 +246,12 @@ void ATestCharacter1::Turn(float NewAxisValue)
 	PlayerDirection = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X); // PlayerDirection에 카메라 방향을 저장
 	//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
 	//SetActorRotation(TempRotator);
+}
+
+void ATestCharacter1::OnFireMontageEnded(UAnimMontage * Montage, bool bInterrupted)
+{
+	TLOG(Warning, TEXT("Fire End!"));
+	IsAttacking = false;
 }
 
 void ATestCharacter1::SetDamage(float Damage)

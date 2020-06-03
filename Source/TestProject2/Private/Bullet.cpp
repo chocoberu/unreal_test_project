@@ -93,3 +93,8 @@ void ABullet::SetOwnerController(ATestCharacter1* TCharacter)
 	OwnerController = TCharacter->GetController();
 }
 
+void ABullet::SetFireDirection(const FVector & Direction)
+{
+	ProjectileMovementComponent->Velocity = Direction * ProjectileMovementComponent->InitialSpeed;
+}
+

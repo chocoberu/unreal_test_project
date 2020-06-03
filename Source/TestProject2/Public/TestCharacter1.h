@@ -38,6 +38,8 @@ public:
 
 	UFUNCTION()
 		void Fire();
+	UFUNCTION()
+		void FireProjectile();
 	
 	UPROPERTY(EditDefaultsOnly, Category = Projectile) // 총알 클래스 
 		class ABullet* BulletClass;
@@ -66,5 +68,10 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category = TEST) FVector PlayerDirection; // 플레이어가 바라보는 방향
 	UPROPERTY(VisibleAnywhere, Category = HP) float HP;
+	UFUNCTION()
+		void OnFireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void SetDamage(float Damage);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+		bool IsAttacking;
 };

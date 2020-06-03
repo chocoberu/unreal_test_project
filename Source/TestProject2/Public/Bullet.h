@@ -39,6 +39,7 @@ public:
 		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 	void SetOwnerController(class ATestCharacter1* TCharacter);
+	void SetFireDirection(const FVector& Direction);
 private:
 	AController* OwnerController;
 	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* BulletParticle; // 파티클 시스템
