@@ -69,6 +69,7 @@ void ATestCharacter1::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
 }
 
 void ATestCharacter1::SetCameraMode(ECameraMode NewCameraMode)
@@ -142,6 +143,8 @@ void ATestCharacter1::PostInitializeComponents()
 	TestAnim->OnMontageEnded.AddDynamic(this, &ATestCharacter1::OnFireMontageEnded);
 	TestAnim->OnFireProjectile.AddLambda([this]() -> void {
 
+		// 총알 발사 애님 몽타쥬의 노티파이가 오면 호출
+		// 총알 발사
 		FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
 		if (GetMesh()->DoesSocketExist(MuzzleSocket))
 		{
@@ -161,7 +164,7 @@ void ATestCharacter1::PostInitializeComponents()
 
 void ATestCharacter1::Fire()
 {
-	// TODO : 총알 발사 방향 지정 필요 
+	// TODO : 총알 발사 애니메이션 에임 조정
 	if (IsAttacking)
 		return;
 	TLOG(Warning, TEXT("Fire!"));

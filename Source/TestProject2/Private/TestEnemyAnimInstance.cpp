@@ -14,6 +14,7 @@ UTestEnemyAnimInstance::UTestEnemyAnimInstance()
 	{
 		AttackMontage = ATTACK_MONTAGE.Object;
 	}
+	IsDead = false;
 }
 void UTestEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
@@ -30,6 +31,7 @@ void UTestEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void UTestEnemyAnimInstance::PlayAttackingMontage()
 {
+	TCHECK(!IsDead);
 	if (!Montage_IsPlaying(AttackMontage))
 		Montage_Play(AttackMontage, 1.0f);
 }

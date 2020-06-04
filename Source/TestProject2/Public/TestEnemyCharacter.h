@@ -26,12 +26,17 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void PostInitializeComponents() override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 애님 인스턴스
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
+	UPROPERTY(VisibleAnywhere, Category = HP) float HP;
+
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void Attack();
+	void AttackCheck();
+	void SetDamage(float Damage);
 };

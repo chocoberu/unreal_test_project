@@ -3,6 +3,7 @@
 
 #include "TestEnemyCharacter.h"
 #include "TestEnemyAnimInstance.h"
+#include "TestWeapon.h"
 
 // Sets default values
 ATestEnemyCharacter::ATestEnemyCharacter()
@@ -26,8 +27,10 @@ ATestEnemyCharacter::ATestEnemyCharacter()
 		GetMesh()->SetSkeletalMesh(SK_WARRIOR.Object);
 	}
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FRotator(0.0f, -90.0f, 0.0f));
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("TCharacter"));
 
 	IsAttacking = false;
+	HP = 100.0f;
 }
 
 // Called when the game starts or when spawned
@@ -35,6 +38,13 @@ void ATestEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	FName WeaponSocket(TEXT("Hand_rSocket"));
+	auto CurWeapon = GetWorld()->SpawnActor<ATestWeapon>(FVector::ZeroVector, FRotator::ZeroRotator);
+	if (CurWeapon != nullptr)
+	{
+		CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
+		CurWeapon->SetActorRelativeLocation(FVector(0.0f, 0.0f, 25.0f));
+	}
 }
 
 // Called every frame
@@ -54,10 +64,18 @@ void ATestEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void ATestEnemyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	auto AnimInstance = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
-	TCHECK(AnimInstance != nullptr);
+	TestAnim = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
+	TCHECK(TestAnim != nullptr);
 
-	AnimInstance->OnMontageEnded.AddDynamic(this, &ATestEnemyCharacter::OnAttackMontageEnded);
+	TestAnim->OnMontageEnded.AddDynamic(this, &ATestEnemyCharacter::OnAttackMontageEnded);
+}
+
+float ATestEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
+{
+	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	SetDamage(FinalDamage);
+	TLOG(Warning, TEXT("Actor : %s took Damage : %f, Current HP : %f"), *GetName(), FinalDamage, HP);
+	return FinalDamage;
 }
 
 void ATestEnemyCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterrupted)
@@ -76,5 +94,40 @@ void ATestEnemyCharacter::Attack()
 		return;
 	//AnimInstance-
 	IsAttacking = true;
+}
+void ATestEnemyCharacter::AttackCheck()
+{
+	FHitResult HitResult;
+	FCollisionQueryParams Params(NAME_None, false, this);
+	bool bResult = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		GetActorLocation(),
+		GetActorLocation() + GetActorForwardVector() * 200.0f,
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel2,
+		FCollisionShape::MakeSphere(50.0f),
+		Params);
+
+	if (bResult)
+	{
+		if (HitResult.Actor.IsValid())
+		{
+			TLOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.Actor->GetName());
+			FDamageEvent DamageEvent;
+			HitResult.Actor->TakeDamage(50.0f, DamageEvent, GetController(), this);
+		}
+	}
+}
+
+void ATestEnemyCharacter::SetDamage(float Damage)
+{
+	HP -= Damage;
+
+	if (HP <= 0.0f)
+	{
+		TLOG(Warning, TEXT("DEAD!"));
+		TestAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+	}
 }
 
