@@ -28,15 +28,17 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UPROPERTY(VisibleAnywhere, Category = Stat) class UTestCharacterStatComponent* CharacterStat; // ƒ≥∏Ø≈Õ Ω∫≈»
+	UPROPERTY(VisibleAnywhere, Category = UI) class UWidgetComponent* HPBarWidget; // HPπŸ ¿ß¡¨
+
 private:
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // æ÷¥‘ ¿ŒΩ∫≈œΩ∫
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
-	UPROPERTY(VisibleAnywhere, Category = HP) float HP;
-
+	
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void Attack();
 	void AttackCheck();
-	void SetDamage(float Damage);
+	
 };

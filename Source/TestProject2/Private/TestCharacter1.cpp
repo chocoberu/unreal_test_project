@@ -4,6 +4,9 @@
 #include "TestCharacter1.h"
 #include "TestAnimInstance.h"
 #include "Bullet.h"
+#include "TestCharacterStatComponent.h"
+#include "Components/WidgetComponent.h"
+#include "TestCharacterWidget.h"
 
 // Sets default values
 ATestCharacter1::ATestCharacter1()
@@ -11,16 +14,19 @@ ATestCharacter1::ATestCharacter1()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 스프링암 컴포넌트, 카메라 컴포넌트, 파티클 시스템 컴포넌트를 생성
+	// 컴포넌트를 생성
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 	MuzzleParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("PARTICLE"));
+	CharacterStat = CreateDefaultSubobject<UTestCharacterStatComponent>(TEXT("STAT"));
+	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBAR"));
 
-	// 스프링암을 루트 컴포넌트에 붙임
+	// 컴포넌트 구조 설정
 	SpringArm->SetupAttachment(RootComponent);
 	Camera->SetupAttachment(SpringArm); // 카메라를 스프링암에 붙임
 	FName MuzzleSocket(TEXT("Muzzle_01"));
 	MuzzleParticle->SetupAttachment(GetMesh(), MuzzleSocket);
+	HPBarWidget->SetupAttachment(GetMesh());
 
 	GetCapsuleComponent()->SetCapsuleHalfHeight(95.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(30.0f);
@@ -60,8 +66,18 @@ ATestCharacter1::ATestCharacter1()
 	PlayerDirection = GetActorForwardVector();
 
 	SetCameraMode(ECameraMode::GTA);
-	HP = 100.0f;
 	IsAttacking = false;
+
+	// HP Bar 관련 설정
+	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	static ConstructorHelpers::FClassFinder<UUserWidget>
+		UI_HUD(TEXT("/Game/UI/UI_HPBar.UI_HPBar_C"));
+	if (UI_HUD.Succeeded())
+	{
+		HPBarWidget->SetWidgetClass(UI_HUD.Class);
+		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -69,6 +85,9 @@ void ATestCharacter1::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	TCHECK(CharacterWidget != nullptr);
+	CharacterWidget->BindCharacterStat(CharacterStat);
 	
 }
 
@@ -140,7 +159,7 @@ void ATestCharacter1::PostInitializeComponents()
 
 	TestAnim = Cast<UTestAnimInstance>(GetMesh()->GetAnimInstance());
 	TCHECK(TestAnim != nullptr);
-	TestAnim->OnMontageEnded.AddDynamic(this, &ATestCharacter1::OnFireMontageEnded);
+	//TestAnim->OnMontageEnded.AddDynamic(this, &ATestCharacter1::OnFireMontageEnded);
 	TestAnim->OnFireProjectile.AddLambda([this]() -> void {
 
 		// 총알 발사 애님 몽타쥬의 노티파이가 오면 호출
@@ -154,17 +173,25 @@ void ATestCharacter1::PostInitializeComponents()
 			// 해당 위치에서 플레이어의 회전방향으로 총알 생성
 			BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket), GetMesh()->GetSocketRotation(MuzzleSocket));
 			BulletClass->SetOwner(this);
-			BulletClass->SetOwnerController(this);
+			BulletClass->SetOwnerController(this, CharacterStat->GetAttack());
 			BulletClass->SetFireDirection(GetMesh()->GetSocketRotation(MuzzleSocket).Vector());
 			//TLOG(Warning, TEXT("muzzle location : %s"), *GetMesh()->GetSocketLocation(MuzzleSocket).ToString()); // 머즐 소켓의 위치 확인용 로그
 			//IsAttacking = true;
 		}
 		});
+	CharacterStat->SetStat(TEXT("Player"));
+	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
+		TLOG(Warning, TEXT("Player OnHPIsZero"));
+		TestAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+		});
+
+	
 }
 
 void ATestCharacter1::Fire()
 {
-	// TODO : 총알 발사 애니메이션 에임 조정
+	// TODO : 총알 발사 애니메이션 에임 조정 (조준선 HUD로 조정필요)
 	if (IsAttacking)
 		return;
 	TLOG(Warning, TEXT("Fire!"));
@@ -173,30 +200,12 @@ void ATestCharacter1::Fire()
 
 }
 
-void ATestCharacter1::FireProjectile()
-{
-	FName MuzzleSocket(TEXT("Muzzle_01")); // 스켈레탈 메시의 muzzle 소켓이 존재한다면
-	if (GetMesh()->DoesSocketExist(MuzzleSocket))
-	{
-		//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
-		//SetActorRotation(TempRotator);
-		MuzzleParticle->Activate(true); // 파티클 시스템 활성화
-		// 해당 위치에서 플레이어의 회전방향으로 총알 생성
-		BulletClass = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), GetMesh()->GetSocketLocation(MuzzleSocket), GetMesh()->GetSocketRotation(MuzzleSocket));
-		BulletClass->SetOwner(this);
-		BulletClass->SetOwnerController(this);
-		BulletClass->SetFireDirection(GetMesh()->GetSocketRotation(MuzzleSocket).Vector());
-		//TLOG(Warning, TEXT("muzzle location : %s"), *GetMesh()->GetSocketLocation(MuzzleSocket).ToString()); // 머즐 소켓의 위치 확인용 로그
-		//IsAttacking = true;
-	}
-}
-
 float ATestCharacter1::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
 	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	TLOG(Warning, TEXT("Actor : %s took Damage : %f"), *GetName(), FinalDamage);
 
-	SetDamage(FinalDamage);
+	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
 }
 
@@ -249,22 +258,5 @@ void ATestCharacter1::Turn(float NewAxisValue)
 	PlayerDirection = FRotationMatrix(GetControlRotation()).GetUnitAxis(EAxis::X); // PlayerDirection에 카메라 방향을 저장
 	//FRotator TempRotator = FRotator::MakeFromEuler(PlayerDirection);
 	//SetActorRotation(TempRotator);
-}
-
-void ATestCharacter1::OnFireMontageEnded(UAnimMontage * Montage, bool bInterrupted)
-{
-	TLOG(Warning, TEXT("Fire End!"));
-	IsAttacking = false;
-}
-
-void ATestCharacter1::SetDamage(float Damage)
-{
-	HP -= Damage;
-
-	if (HP <= 0.0f)
-	{
-		TestAnim->SetDeadAnim();
-		SetActorEnableCollision(false);
-	}
 }
 

@@ -38,16 +38,15 @@ public:
 
 	UFUNCTION()
 		void Fire();
-	UFUNCTION()
-		void FireProjectile();
-	
-	UPROPERTY(EditDefaultsOnly, Category = Projectile) // 총알 클래스 
-		class ABullet* BulletClass;
-	
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 public:
+	UPROPERTY(EditDefaultsOnly, Category = Projectile) // 총알 클래스 
+		class ABullet* BulletClass;
 	UPROPERTY(VisibleAnywhere, Category = Camera) USpringArmComponent* SpringArm; // 스프링암 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* Camera; // 카메라 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category = Stat) class UTestCharacterStatComponent* CharacterStat; // 캐릭터 스탯 컴포넌트
+	UPROPERTY(VisibleAnywhere, Category = UI) class UWidgetComponent* HPBarWidget; // HP바 위젯
 
 protected:
 
@@ -67,11 +66,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Particle) UParticleSystemComponent* MuzzleParticle; // 총알 발사 시의 파티클 시스템
 	
 	UPROPERTY(VisibleAnywhere, Category = TEST) FVector PlayerDirection; // 플레이어가 바라보는 방향
-	UPROPERTY(VisibleAnywhere, Category = HP) float HP;
-	UFUNCTION()
-		void OnFireMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	void SetDamage(float Damage);
-
+	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
 };

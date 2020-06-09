@@ -2,6 +2,7 @@
 
 
 #include "TestItemBox.h"
+#include "TestCharacter1.h"
 
 // Sets default values
 ATestItemBox::ATestItemBox()
@@ -49,7 +50,15 @@ void ATestItemBox::Tick(float DeltaTime)
 
 void ATestItemBox::OnCharacterOverlap(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	// TODO : 아이템 접촉시 아이템 습득 구현필요 (HP 회복, 총알 개수 증가 등)
 	TLOG_S(Warning);
+
+	auto TestCharacter = Cast<ATestCharacter1>(OtherActor);
+	TCHECK(TestCharacter != nullptr);
+
+	if (TestCharacter != nullptr)
+	{
+		// TODO : 아이템 접촉시 아이템 습득 구현필요 (HP 회복, 총알 개수 증가 등)
+	}
+
 }
 

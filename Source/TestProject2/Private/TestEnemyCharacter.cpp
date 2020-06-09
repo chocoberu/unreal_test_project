@@ -4,6 +4,10 @@
 #include "TestEnemyCharacter.h"
 #include "TestEnemyAnimInstance.h"
 #include "TestWeapon.h"
+#include "TestCharacterStatComponent.h"
+#include "Components/WidgetComponent.h"
+#include "TestCharacterWidget.h"
+
 
 // Sets default values
 ATestEnemyCharacter::ATestEnemyCharacter()
@@ -11,6 +15,9 @@ ATestEnemyCharacter::ATestEnemyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 컴포넌트 생성
+	CharacterStat = CreateDefaultSubobject<UTestCharacterStatComponent>(TEXT("STAT"));
+	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBAR"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		SK_WARRIOR(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
@@ -29,8 +36,20 @@ ATestEnemyCharacter::ATestEnemyCharacter()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -90.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("TCharacter"));
 
-	IsAttacking = false;
-	HP = 100.0f;
+	//IsAttacking = false;
+	
+	// HP Bar 관련 설정
+	HPBarWidget->SetupAttachment(GetMesh());
+	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
+	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	static ConstructorHelpers::FClassFinder<UUserWidget>
+		UI_HUD(TEXT("/Game/UI/UI_HPBar.UI_HPBar_C"));
+	if (UI_HUD.Succeeded())
+	{
+		HPBarWidget->SetWidgetClass(UI_HUD.Class);
+		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
+	}
+	
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +64,10 @@ void ATestEnemyCharacter::BeginPlay()
 		CurWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocket);
 		CurWeapon->SetActorRelativeLocation(FVector(0.0f, 0.0f, 25.0f));
 	}
+
+	auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	TCHECK(CharacterWidget != nullptr);
+	CharacterWidget->BindCharacterStat(CharacterStat);
 }
 
 // Called every frame
@@ -67,14 +90,20 @@ void ATestEnemyCharacter::PostInitializeComponents()
 	TestAnim = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
 	TCHECK(TestAnim != nullptr);
 
+	CharacterStat->SetStat(TEXT("Enemy1"));
+	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
+		TLOG(Warning, TEXT("Enemy1 OnHPIsZero"));
+		TestAnim->SetDeadAnim();
+		SetActorEnableCollision(false);
+		});
 	TestAnim->OnMontageEnded.AddDynamic(this, &ATestEnemyCharacter::OnAttackMontageEnded);
 }
 
 float ATestEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
 	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	SetDamage(FinalDamage);
-	TLOG(Warning, TEXT("Actor : %s took Damage : %f, Current HP : %f"), *GetName(), FinalDamage, HP);
+	TLOG(Warning, TEXT("Actor : %s took Damage : %f, Current HP : %f"), *GetName(), FinalDamage, CharacterStat->GetCurrentHP());
+	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
 }
 
@@ -112,22 +141,10 @@ void ATestEnemyCharacter::AttackCheck()
 	{
 		if (HitResult.Actor.IsValid())
 		{
+			//TODO take
 			TLOG(Warning, TEXT("Hit Actor Name : %s"), *HitResult.Actor->GetName());
 			FDamageEvent DamageEvent;
-			HitResult.Actor->TakeDamage(50.0f, DamageEvent, GetController(), this);
+			HitResult.Actor->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
 	}
 }
-
-void ATestEnemyCharacter::SetDamage(float Damage)
-{
-	HP -= Damage;
-
-	if (HP <= 0.0f)
-	{
-		TLOG(Warning, TEXT("DEAD!"));
-		TestAnim->SetDeadAnim();
-		SetActorEnableCollision(false);
-	}
-}
-

@@ -82,15 +82,17 @@ void ABullet::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPr
 	Mesh->SetHiddenInGame(true); // 메시를 숨김
 	FDamageEvent DamageEvent;
 	
+	
 	if (OtherActor != GetOwner() && ::IsValid(OtherActor)) // 맞은 대상이 총알을 발사한 캐릭터가 아니라면
-		OtherActor->TakeDamage(10.0f, DamageEvent, OwnerController, this); // 데미지 전달
+		OtherActor->TakeDamage(AttackDamage, DamageEvent, OwnerController, this); // 데미지 전달
 	//else
 	//	TLOG(Warning, TEXT("I MY ME MINE"));
 }
 
-void ABullet::SetOwnerController(ATestCharacter1* TCharacter)
+void ABullet::SetOwnerController(ATestCharacter1* TCharacter, float NewDamage)
 {
 	OwnerController = TCharacter->GetController();
+	AttackDamage = NewDamage;
 }
 
 void ABullet::SetFireDirection(const FVector & Direction)
