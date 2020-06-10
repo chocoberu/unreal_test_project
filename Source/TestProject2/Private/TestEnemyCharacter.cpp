@@ -7,6 +7,7 @@
 #include "TestCharacterStatComponent.h"
 #include "Components/WidgetComponent.h"
 #include "TestCharacterWidget.h"
+#include "TestAIController.h"
 
 
 // Sets default values
@@ -50,6 +51,9 @@ ATestEnemyCharacter::ATestEnemyCharacter()
 		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
 	}
 	
+	// AI Controller ฐüทร
+	AIControllerClass = ATestAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 // Called when the game starts or when spawned
