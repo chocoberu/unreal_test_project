@@ -101,6 +101,7 @@ void ATestEnemyCharacter::PostInitializeComponents()
 		SetActorEnableCollision(false);
 		});
 	TestAnim->OnMontageEnded.AddDynamic(this, &ATestEnemyCharacter::OnAttackMontageEnded);
+	TestAnim->OnAttackHitCheck.AddUObject(this, &ATestEnemyCharacter::AttackCheck);
 }
 
 float ATestEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
@@ -111,10 +112,22 @@ float ATestEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & D
 	return FinalDamage;
 }
 
+void ATestEnemyCharacter::PossessedBy(AController * NewController)
+{
+	Super::PossessedBy(NewController);
+
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 480.0f, 0.0f);
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+}
+
 void ATestEnemyCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterrupted)
 {
 	TCHECK(IsAttacking);
 	IsAttacking = false;
+	OnAttackEnd.Broadcast();
 }
 
 void ATestEnemyCharacter::Attack()
@@ -122,10 +135,7 @@ void ATestEnemyCharacter::Attack()
 	if (IsAttacking)
 		return;
 
-	auto AnimInstance = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance == nullptr)
-		return;
-	//AnimInstance-
+	TestAnim->PlayAttackingMontage();
 	IsAttacking = true;
 }
 void ATestEnemyCharacter::AttackCheck()

@@ -35,3 +35,8 @@ void UTestEnemyAnimInstance::PlayAttackingMontage()
 	if (!Montage_IsPlaying(AttackMontage))
 		Montage_Play(AttackMontage, 1.0f);
 }
+
+void UTestEnemyAnimInstance::AnimNotify_AttackHitCheck()
+{
+	OnAttackHitCheck.Broadcast();
+}

@@ -14,7 +14,7 @@ UBTService_Detect::UBTService_Detect()
 }
 void UBTService_Detect::TickNode(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory, float DeltaSeconds)
 {
-	// NPC의 위치를 기준으로 반경 6미터 내에 캐릭터가 있는지 감지
+	// NPC의 위치를 기준으로 반경 3미터 내에 캐릭터가 있는지 감지
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn(); // AIController가 조종하는 폰
@@ -23,13 +23,13 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent & OwnerComp, uint8 * Nod
 
 	UWorld* World = ControllingPawn->GetWorld();
 	FVector Center = ControllingPawn->GetActorLocation(); // 폰의 위치 좌표
-	float DetectRadius = 600.0f;
+	float DetectRadius = 300.0f;
 
 	if (World == nullptr)
 		return;
 	TArray<FOverlapResult> OverlapResults;
 	FCollisionQueryParams CollisionQueryParam(NAME_None, false, ControllingPawn);
-	// Center 기준으로 반경 6미터 내를 탐지
+	// Center 기준으로 반경 3미터 내를 탐지
 	bool bResult = World->OverlapMultiByChannel(
 		OverlapResults,
 		Center,

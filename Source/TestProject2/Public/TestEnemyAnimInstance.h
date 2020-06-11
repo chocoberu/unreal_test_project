@@ -9,6 +9,8 @@
 /**
  * 
  */
+
+DECLARE_MULTICAST_DELEGATE(FOnAttackHitCheckDelegate);
 UCLASS()
 class TESTPROJECT2_API UTestEnemyAnimInstance : public UAnimInstance
 {
@@ -21,6 +23,8 @@ public:
 	void PlayAttackingMontage();
 	void SetDeadAnim() { IsDead = true; }
 
+	FOnAttackHitCheckDelegate OnAttackHitCheck;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 		float CurrentPawnSpeed;
@@ -28,4 +32,7 @@ private:
 		UAnimMontage* AttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 		bool IsDead;
+
+	UFUNCTION()
+		void AnimNotify_AttackHitCheck();
 };
