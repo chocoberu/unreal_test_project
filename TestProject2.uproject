@@ -5,13 +5,22 @@
 	"Description": "",
 	"Modules": [
 		{
+			"Name": "TestProject2Setting",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"CoreUObject"
+			]
+		},
+		{
 			"Name": "TestProject2",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
 				"UMG",
-				"AIModule"
+				"AIModule",
+				"TestProject2Setting"
 			]
 		}
 	]
