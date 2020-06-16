@@ -8,6 +8,8 @@
 #include "Components/WidgetComponent.h"
 #include "TestCharacterWidget.h"
 #include "TestAIController.h"
+#include "TestEnemyCharacterSetting.h"
+#include "TestGameInstance.h"
 
 
 // Sets default values
@@ -54,6 +56,8 @@ ATestEnemyCharacter::ATestEnemyCharacter()
 	// AI Controller 관련
 	AIControllerClass = ATestAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	
 }
 
 // Called when the game starts or when spawned
@@ -61,6 +65,17 @@ void ATestEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	auto DefaultSetting = GetDefault<UTestEnemyCharacterSetting>();
+	int32 RandomIndex = FMath::RandRange(0, DefaultSetting->CharacterAssets.Num() - 1);
+	CharacterAssetToLoad = DefaultSetting->CharacterAssets[RandomIndex];
+
+	auto TestGameInstance = Cast<UTestGameInstance>(GetGameInstance());
+	if (TestGameInstance != nullptr)
+	{
+		AssetStreamingHandle = TestGameInstance->StreamableManager.RequestAsyncLoad(CharacterAssetToLoad, 
+			FStreamableDelegate::CreateUObject(this, &ATestEnemyCharacter::OnAssetLoadCompleted));
+	}
+
 	FName WeaponSocket(TEXT("Hand_rSocket"));
 	auto CurWeapon = GetWorld()->SpawnActor<ATestWeapon>(FVector::ZeroVector, FRotator::ZeroRotator);
 	if (CurWeapon != nullptr)
@@ -71,7 +86,10 @@ void ATestEnemyCharacter::BeginPlay()
 
 	auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	TCHECK(CharacterWidget != nullptr);
-	CharacterWidget->BindCharacterStat(CharacterStat);
+	CharacterWidget->BindCharacterStat(CharacterStat); // 캐릭터 스탯 설정
+
+	TestAIController = Cast<ATestAIController>(GetController());
+	SetCharacterState(ECharacterState::LOADING);
 }
 
 // Called every frame
@@ -112,17 +130,6 @@ float ATestEnemyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & D
 	return FinalDamage;
 }
 
-void ATestEnemyCharacter::PossessedBy(AController * NewController)
-{
-	Super::PossessedBy(NewController);
-
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 480.0f, 0.0f);
-	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-}
-
 void ATestEnemyCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterrupted)
 {
 	TCHECK(IsAttacking);
@@ -137,6 +144,58 @@ void ATestEnemyCharacter::Attack()
 
 	TestAnim->PlayAttackingMontage();
 	IsAttacking = true;
+}
+void ATestEnemyCharacter::SetCharacterState(ECharacterState NewState)
+{
+	TCHECK(CurrentState != NewState);
+	CurrentState = NewState;
+	switch (CurrentState)
+	{
+	case ECharacterState::LOADING:
+	{
+		SetActorHiddenInGame(true);
+		HPBarWidget->SetHiddenInGame(true);
+		bCanBeDamaged = false;
+		break;
+	}
+	case ECharacterState::READY:
+	{
+		SetActorHiddenInGame(false);
+		HPBarWidget->SetHiddenInGame(false);
+		bCanBeDamaged = true;
+
+		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
+			{
+				SetCharacterState(ECharacterState::DEAD);
+			});
+		auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+		TCHECK(CharacterWidget != nullptr);
+		CharacterWidget->BindCharacterStat(CharacterStat);
+
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->RotationRate = FRotator(0.0f, 480.0f, 0.0f);
+		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+		TestAIController->RunAI();
+		break;
+	}
+	case ECharacterState::DEAD:
+	{
+		SetActorEnableCollision(false);
+		GetMesh()->SetHiddenInGame(false);
+		HPBarWidget->SetHiddenInGame(true);
+		TestAnim->SetDeadAnim();
+		bCanBeDamaged = false;
+
+		TestAIController->StopAI();
+		break;
+	}
+	}
+}
+ECharacterState ATestEnemyCharacter::GetCharacterState() const
+{
+	return CurrentState;
 }
 void ATestEnemyCharacter::AttackCheck()
 {
@@ -161,4 +220,15 @@ void ATestEnemyCharacter::AttackCheck()
 			HitResult.Actor->TakeDamage(CharacterStat->GetAttack(), DamageEvent, GetController(), this);
 		}
 	}
+}
+
+void ATestEnemyCharacter::OnAssetLoadCompleted()
+{
+	USkeletalMesh* AssetLoaded = Cast<USkeletalMesh>(AssetStreamingHandle->GetLoadedAsset()); // 불러온 스켈레탈 메시
+	AssetStreamingHandle.Reset(); // 핸들 초기화
+	if (AssetLoaded != nullptr)
+	{
+		GetMesh()->SetSkeletalMesh(AssetLoaded);
+	}
+	SetCharacterState(ECharacterState::READY);
 }

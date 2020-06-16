@@ -8,7 +8,7 @@
 #include "Components/WidgetComponent.h"
 #include "TestCharacterWidget.h"
 
-// Sets default values
+// TODO : 카메라 위치 조정
 ATestCharacter1::ATestCharacter1()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -36,6 +36,7 @@ ATestCharacter1::ATestCharacter1()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -97.0f), FRotator(0.0f, -90.0f, 0.0f));
 	SpringArm->TargetArmLength = 400.0f; // 스프링암 설정
 	SpringArm->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
+	
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		SK_WRAITH(TEXT("/Game/ParagonWraith/Characters/Heroes/Wraith/Meshes/Wraith.Wraith"));
@@ -78,6 +79,10 @@ ATestCharacter1::ATestCharacter1()
 		HPBarWidget->SetWidgetClass(UI_HUD.Class);
 		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
 	}
+
+	SetActorHiddenInGame(true);
+	HPBarWidget->SetHiddenInGame(true);
+	bCanBeDamaged = false;
 }
 
 // Called when the game starts or when spawned
@@ -85,10 +90,10 @@ void ATestCharacter1::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+	/*auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	TCHECK(CharacterWidget != nullptr);
-	CharacterWidget->BindCharacterStat(CharacterStat);
-	
+	CharacterWidget->BindCharacterStat(CharacterStat);*/
+	SetCharacterState(ECharacterState::READY);
 }
 
 void ATestCharacter1::SetCameraMode(ECameraMode NewCameraMode)
@@ -107,7 +112,8 @@ void ATestCharacter1::SetCameraMode(ECameraMode NewCameraMode)
 		bUseControllerRotationYaw = true;
 		break;
 	case ECameraMode::GTA:
-		ArmLengthTo = 450.f;
+		//ArmLengthTo = 450.f;
+		ArmLengthTo = 550.0f;
 		SpringArm->bUsePawnControlRotation = true;
 		SpringArm->bInheritPitch = true;
 		SpringArm->bInheritRoll = true;
@@ -207,6 +213,51 @@ float ATestCharacter1::TakeDamage(float DamageAmount, FDamageEvent const & Damag
 
 	CharacterStat->SetDamage(FinalDamage);
 	return FinalDamage;
+}
+
+void ATestCharacter1::SetCharacterState(ECharacterState NewState)
+{
+	TCHECK(CurrentState != NewState);
+	CurrentState = NewState;
+	switch (CurrentState)
+	{
+	case ECharacterState::LOADING:
+	{
+		SetActorHiddenInGame(true);
+		HPBarWidget->SetHiddenInGame(true);
+		bCanBeDamaged = false;
+		break;
+	}
+	case ECharacterState::READY:
+	{
+		SetActorHiddenInGame(false);
+		HPBarWidget->SetHiddenInGame(false);
+		bCanBeDamaged = true;
+
+		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
+			{
+				SetCharacterState(ECharacterState::DEAD);
+			});
+		auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
+		TCHECK(CharacterWidget != nullptr);
+		CharacterWidget->BindCharacterStat(CharacterStat);
+		break;
+	}
+	case ECharacterState::DEAD:
+	{
+		SetActorEnableCollision(false);
+		GetMesh()->SetHiddenInGame(false);
+		HPBarWidget->SetHiddenInGame(true);
+		TestAnim->SetDeadAnim();
+		bCanBeDamaged = false;
+		break;
+	}
+	}
+}
+
+ECharacterState ATestCharacter1::GetCharacterState() const
+{
+	return CurrentState;
 }
 
 

@@ -5,6 +5,7 @@
 #include "TestProject2.h"
 #include "Engine/DataTable.h"
 #include "Engine/GameInstance.h"
+#include "Engine/StreamableManager.h"
 #include "TestGameInstance.generated.h"
 
 USTRUCT(BlueprintType)
@@ -31,6 +32,8 @@ public:
 
 	virtual void Init() override;
 	FTestCharacterData* GetTestCharacterData(FString Name);
+
+	FStreamableManager StreamableManager; // 비동기 에셋 로딩을 위한 매니저
 private:
 	
 	UPROPERTY() class UDataTable* TestCharacterTable;

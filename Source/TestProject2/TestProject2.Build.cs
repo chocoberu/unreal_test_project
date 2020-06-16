@@ -10,5 +10,6 @@ public class TestProject2 : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "UMG", "NavigationSystem"
         , "AIModule", "GameplayTasks"});
+        PrivateDependencyModuleNames.AddRange(new string[] { "TestProject2Setting" });
 	}
 }

@@ -30,12 +30,25 @@ void ATestAIController::OnPossess(APawn * InPawn)
 {
 	Super::OnPossess(InPawn);
 
+}
+
+void ATestAIController::RunAI()
+{
 	if (UseBlackboard(BBAsset, Blackboard))
 	{
-		Blackboard->SetValueAsVector(HomePosKey, InPawn->GetActorLocation());
+		Blackboard->SetValueAsVector(HomePosKey, GetPawn()->GetActorLocation());
 		if (!RunBehaviorTree(BTAsset))
 		{
 			TLOG(Error, TEXT("AIController couldn't run behavior tree!"));
 		}
+	}
+}
+
+void ATestAIController::StopAI()
+{
+	auto BehaviorTreeComponent = Cast<UBehaviorTreeComponent>(BrainComponent);
+	if (BehaviorTreeComponent != nullptr)
+	{
+		BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
 	}
 }

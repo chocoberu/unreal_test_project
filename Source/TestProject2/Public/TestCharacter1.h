@@ -40,6 +40,10 @@ public:
 		void Fire();
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	void SetCharacterState(ECharacterState NewState);
+	ECharacterState GetCharacterState() const;
+
 public:
 	UPROPERTY(EditDefaultsOnly, Category = Projectile) // ÃÑ¾Ë Å¬·¡½º 
 		class ABullet* BulletClass;
@@ -69,4 +73,7 @@ private:
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
+
+	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = true))
+		ECharacterState CurrentState;
 };

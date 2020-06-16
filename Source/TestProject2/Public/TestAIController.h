@@ -21,6 +21,9 @@ public:
 	static const FName HomePosKey; // NPC 생성 위치를 찾기위한 키
 	static const FName PatrolPosKey; // NPC의 순찰 위치를 찾기위한 키
 	static const FName TargetKey; // 타겟을 찾기위한 키
+
+	void RunAI(); // AI 가동
+	void StopAI(); // AI 작동 중단
 	
 private:
 	// 블랙보드 : 인공지능의 판단에 사용하는 데이터 집합

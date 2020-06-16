@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(config = TestProject2)
+UCLASS(config=TestProject2)
 class TESTPROJECT2SETTING_API UTestEnemyCharacterSetting : public UObject
 {
 	GENERATED_BODY()
