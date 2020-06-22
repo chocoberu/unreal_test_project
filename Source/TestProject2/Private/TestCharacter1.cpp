@@ -7,6 +7,9 @@
 #include "TestCharacterStatComponent.h"
 #include "Components/WidgetComponent.h"
 #include "TestCharacterWidget.h"
+#include "TestPlayerState.h"
+#include "TestHUDWidget.h"
+#include "TestPlayerController.h"
 
 // TODO : 카메라 위치 조정
 ATestCharacter1::ATestCharacter1()
@@ -93,6 +96,8 @@ void ATestCharacter1::BeginPlay()
 	/*auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 	TCHECK(CharacterWidget != nullptr);
 	CharacterWidget->BindCharacterStat(CharacterStat);*/
+	TestPlayerController = Cast<ATestPlayerController>(GetController());
+	TCHECK(TestPlayerController != nullptr);
 	SetCharacterState(ECharacterState::READY);
 }
 
@@ -223,6 +228,7 @@ void ATestCharacter1::SetCharacterState(ECharacterState NewState)
 	{
 	case ECharacterState::LOADING:
 	{
+		
 		SetActorHiddenInGame(true);
 		HPBarWidget->SetHiddenInGame(true);
 		bCanBeDamaged = false;
@@ -233,7 +239,7 @@ void ATestCharacter1::SetCharacterState(ECharacterState NewState)
 		SetActorHiddenInGame(false);
 		HPBarWidget->SetHiddenInGame(false);
 		bCanBeDamaged = true;
-
+		
 		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
 			{
 				SetCharacterState(ECharacterState::DEAD);
@@ -241,10 +247,13 @@ void ATestCharacter1::SetCharacterState(ECharacterState NewState)
 		auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
 		TCHECK(CharacterWidget != nullptr);
 		CharacterWidget->BindCharacterStat(CharacterStat);
+		TestPlayerController->GetHUDWidget()->BindCharacterStat(CharacterStat);
+		
 		break;
 	}
 	case ECharacterState::DEAD:
 	{
+		DisableInput(TestPlayerController);
 		SetActorEnableCollision(false);
 		GetMesh()->SetHiddenInGame(false);
 		HPBarWidget->SetHiddenInGame(true);

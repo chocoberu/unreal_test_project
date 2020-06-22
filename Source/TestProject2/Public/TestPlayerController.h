@@ -20,4 +20,15 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void OnPossess(APawn* aPawn) override;
 
+	class UTestHUDWidget* GetHUDWidget() const;
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI) TSubclassOf<class UTestHUDWidget> HUDWidgetClass;
+
+private:
+	UPROPERTY() class UTestHUDWidget* HUDWidget;
+
 };

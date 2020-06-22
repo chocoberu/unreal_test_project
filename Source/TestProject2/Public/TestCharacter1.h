@@ -76,4 +76,6 @@ private:
 
 	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = true))
 		ECharacterState CurrentState;
+
+	UPROPERTY() class ATestPlayerController* TestPlayerController;
 };
