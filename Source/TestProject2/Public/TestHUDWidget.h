@@ -31,6 +31,4 @@ private:
 	UPROPERTY() class UProgressBar* ExpBar;
 	UPROPERTY() class UTextBlock* PlayerName;
 	UPROPERTY() class UTextBlock* PlayerLevel;
-	UPROPERTY() class UTextBlock* CurrentScore;
-	UPROPERTY() class UTextBlock* HighScore;
 };

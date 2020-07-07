@@ -36,11 +36,6 @@ void UTestHUDWidget::NativeConstruct()
 	PlayerLevel = Cast<UTextBlock>(GetWidgetFromName(TEXT("txtLevel")));
 	TCHECK(PlayerLevel != nullptr);
 
-	CurrentScore = Cast<UTextBlock>(GetWidgetFromName(TEXT("txtCurrentScore")));
-	TCHECK(CurrentScore != nullptr);
-
-	HighScore = Cast<UTextBlock>(GetWidgetFromName(TEXT("txtHighScore")));
-	TCHECK(HighScore != nullptr);
 }
 
 void UTestHUDWidget::UpdateCharacterStat()

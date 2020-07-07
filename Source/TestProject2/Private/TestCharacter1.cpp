@@ -37,9 +37,9 @@ ATestCharacter1::ATestCharacter1()
 
 	// 메시의 상대 위치, 회전 적용
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -97.0f), FRotator(0.0f, -90.0f, 0.0f));
-	SpringArm->TargetArmLength = 400.0f; // 스프링암 설정
-	SpringArm->SetRelativeRotation(FRotator(-15.0f, 0.0f, 0.0f));
-	
+	SpringArm->TargetArmLength = 450.0f; // 스프링암 설정 400
+	SpringArm->SetRelativeRotation(FRotator(-25.0f, 0.0f, 0.0f)); // -15
+	SpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f));	
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		SK_WRAITH(TEXT("/Game/ParagonWraith/Characters/Heroes/Wraith/Meshes/Wraith.Wraith"));
