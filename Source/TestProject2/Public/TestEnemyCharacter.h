@@ -37,17 +37,21 @@ public:
 	FOnAttackEndDelegate OnAttackEnd;
 	void SetCharacterState(ECharacterState NewState);
 	ECharacterState GetCharacterState() const;
-private:
+
+	float GetAttackRange() const;
+	float GetAttackRadius() const;
+
+protected:
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 애님 인스턴스
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 		bool IsAttacking;
-	
+
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	
-	void AttackCheck();
-	
-	void OnAssetLoadCompleted();
+
+	virtual void AttackCheck();
+
+	virtual void OnAssetLoadCompleted();
 
 	FSoftObjectPath CharacterAssetToLoad = FSoftObjectPath(nullptr);
 	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
@@ -58,4 +62,9 @@ private:
 	UPROPERTY()
 		class ATestAIController* TestAIController;
 	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+		float AttackRange;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+		float AttackRadius;
+
 };

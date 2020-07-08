@@ -2,6 +2,9 @@
 
 
 #include "TestBaseCharacter.h"
+#include "TestCharacterWidget.h"
+#include "Components/WidgetComponent.h"
+#include "TestCharacterStatComponent.h"
 
 // Sets default values
 ATestBaseCharacter::ATestBaseCharacter()
@@ -31,4 +34,5 @@ void ATestBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
 

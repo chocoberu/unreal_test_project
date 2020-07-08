@@ -5,6 +5,7 @@
 #include "TestAIController.h"
 #include "TestCharacter1.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "TestEnemyCharacter.h"
 
 UBTDecorator_IsInAttackRange::UBTDecorator_IsInAttackRange()
 {
@@ -22,6 +23,8 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 	if (Target == nullptr)
 		return false;
 
-	bResult = (Target->GetDistanceTo(ControllingPawn) <= 200.0f);
+	float AttackRange = Cast<ATestEnemyCharacter>(ControllingPawn)->GetAttackRange();
+	TLOG(Warning, TEXT("Attack Range is %f"), AttackRange);
+	bResult = (Target->GetDistanceTo(ControllingPawn) <= AttackRange);
 	return bResult;
 }
