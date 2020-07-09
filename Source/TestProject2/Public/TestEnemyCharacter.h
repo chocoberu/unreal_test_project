@@ -3,13 +3,14 @@
 #pragma once
 
 #include "TestProject2.h"
+#include "TestBaseCharacter.h"
 #include "GameFramework/Character.h"
 #include "TestEnemyCharacter.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 
 UCLASS()
-class TESTPROJECT2_API ATestEnemyCharacter : public ACharacter
+class TESTPROJECT2_API ATestEnemyCharacter : public ATestBaseCharacter
 {
 	GENERATED_BODY()
 
@@ -30,16 +31,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-	UPROPERTY(VisibleAnywhere, Category = Stat) class UTestCharacterStatComponent* CharacterStat; // ƒ≥∏Ø≈Õ Ω∫≈»
-	UPROPERTY(VisibleAnywhere, Category = UI) class UWidgetComponent* HPBarWidget; // HPπŸ ¿ß¡¨
-
 	void Attack();
-	FOnAttackEndDelegate OnAttackEnd;
-	void SetCharacterState(ECharacterState NewState);
-	ECharacterState GetCharacterState() const;
 
-	float GetAttackRange() const;
-	float GetAttackRadius() const;
 
 protected:
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // æ÷¥‘ ¿ŒΩ∫≈œΩ∫
@@ -53,18 +46,14 @@ protected:
 
 	virtual void OnAssetLoadCompleted();
 
+	virtual void RunAI();
+	virtual void SetDead();
+
 	FSoftObjectPath CharacterAssetToLoad = FSoftObjectPath(nullptr);
 	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
 
 	int32 AssetIndex = 0;
-	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = true))
-		ECharacterState CurrentState;
 	UPROPERTY()
 		class ATestAIController* TestAIController;
 	
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
-		float AttackRange;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
-		float AttackRadius;
-
 };

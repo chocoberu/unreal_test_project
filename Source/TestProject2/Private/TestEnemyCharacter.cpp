@@ -19,10 +19,6 @@ ATestEnemyCharacter::ATestEnemyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 컴포넌트 생성
-	CharacterStat = CreateDefaultSubobject<UTestCharacterStatComponent>(TEXT("STAT"));
-	HPBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBAR"));
-
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		SK_WARRIOR(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
 
@@ -41,18 +37,6 @@ ATestEnemyCharacter::ATestEnemyCharacter()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("TCharacter"));
 
 	//IsAttacking = false;
-	
-	// HP Bar 관련 설정
-	HPBarWidget->SetupAttachment(GetMesh());
-	HPBarWidget->SetRelativeLocation(FVector(0.0f, 0.0f, 180.0f));
-	HPBarWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	static ConstructorHelpers::FClassFinder<UUserWidget>
-		UI_HUD(TEXT("/Game/UI/UI_HPBar.UI_HPBar_C"));
-	if (UI_HUD.Succeeded())
-	{
-		HPBarWidget->SetWidgetClass(UI_HUD.Class);
-		HPBarWidget->SetDrawSize(FVector2D(150.0f, 50.0f));
-	}
 	
 	// AI Controller 관련
 	AIControllerClass = ATestAIController::StaticClass();
@@ -92,7 +76,8 @@ void ATestEnemyCharacter::BeginPlay()
 	CharacterWidget->BindCharacterStat(CharacterStat); // 캐릭터 스탯 설정
 
 	TestAIController = Cast<ATestAIController>(GetController());
-	SetCharacterState(ECharacterState::LOADING);
+	SetCharacterState(ECharacterState::LOADING); //
+	
 }
 
 // Called every frame
@@ -148,66 +133,7 @@ void ATestEnemyCharacter::Attack()
 	TestAnim->PlayAttackingMontage();
 	IsAttacking = true;
 }
-void ATestEnemyCharacter::SetCharacterState(ECharacterState NewState)
-{
-	TCHECK(CurrentState != NewState);
-	CurrentState = NewState;
-	switch (CurrentState)
-	{
-	case ECharacterState::LOADING:
-	{
-		SetActorHiddenInGame(true);
-		HPBarWidget->SetHiddenInGame(true);
-		bCanBeDamaged = false;
-		break;
-	}
-	case ECharacterState::READY:
-	{
-		SetActorHiddenInGame(false);
-		HPBarWidget->SetHiddenInGame(false);
-		bCanBeDamaged = true;
 
-		CharacterStat->OnHPIsZero.AddLambda([this]() -> void
-			{
-				SetCharacterState(ECharacterState::DEAD);
-			});
-		auto CharacterWidget = Cast<UTestCharacterWidget>(HPBarWidget->GetUserWidgetObject());
-		TCHECK(CharacterWidget != nullptr);
-		CharacterWidget->BindCharacterStat(CharacterStat);
-
-		bUseControllerRotationYaw = false;
-		GetCharacterMovement()->bUseControllerDesiredRotation = false;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		GetCharacterMovement()->RotationRate = FRotator(0.0f, 480.0f, 0.0f);
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
-		TestAIController->RunAI();
-		break;
-	}
-	case ECharacterState::DEAD:
-	{
-		SetActorEnableCollision(false);
-		GetMesh()->SetHiddenInGame(false);
-		HPBarWidget->SetHiddenInGame(true);
-		TestAnim->SetDeadAnim();
-		bCanBeDamaged = false;
-
-		TestAIController->StopAI();
-		break;
-	}
-	}
-}
-ECharacterState ATestEnemyCharacter::GetCharacterState() const
-{
-	return CurrentState;
-}
-float ATestEnemyCharacter::GetAttackRange() const
-{
-	return AttackRange;
-}
-float ATestEnemyCharacter::GetAttackRadius() const
-{
-	return AttackRadius;
-}
 void ATestEnemyCharacter::AttackCheck()
 {
 	FHitResult HitResult;
@@ -261,5 +187,18 @@ void ATestEnemyCharacter::OnAssetLoadCompleted()
 	{
 		GetMesh()->SetSkeletalMesh(AssetLoaded);
 	}
+	TLOG(Warning, TEXT("AssetLoad Completeed"));
 	SetCharacterState(ECharacterState::READY);
+}
+
+void ATestEnemyCharacter::RunAI()
+{
+	TLOG(Warning, TEXT("Run Enmey AI!"));
+	TestAIController->RunAI();
+}
+
+void ATestEnemyCharacter::SetDead()
+{
+	TestAnim->SetDeadAnim();
+	TestAIController->StopAI();
 }

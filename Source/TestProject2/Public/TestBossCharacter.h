@@ -3,14 +3,14 @@
 #pragma once
 
 #include "TestProject2.h"
-#include "TestEnemyCharacter.h"
+#include "TestBaseCharacter.h"
 #include "TestBossCharacter.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TESTPROJECT2_API ATestBossCharacter : public ATestEnemyCharacter
+class TESTPROJECT2_API ATestBossCharacter : public ATestBaseCharacter
 {
 	GENERATED_BODY()
 	
@@ -30,5 +30,23 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void PostInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	void Attack();
+
+protected:
+	virtual void RunAI();
+	virtual void SetDead();
+
+private:
+	UPROPERTY()
+		class ATestBossAIController* TestBossController; // 보스 캐릭터의 AIController
+	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 임시 애님 인스턴스
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+		bool IsAttacking;
+
+	UFUNCTION()
+		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void AttackCheck();
+
 
 };

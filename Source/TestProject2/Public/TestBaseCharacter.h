@@ -6,6 +6,12 @@
 #include "GameFramework/Character.h"
 #include "TestBaseCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+
+/*
+TestEnemyCharacter, TestBossCharacter의 베이스 클래스
+*/
+
 UCLASS()
 class TESTPROJECT2_API ATestBaseCharacter : public ACharacter
 {
@@ -26,4 +32,27 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, Category = Stat) class UTestCharacterStatComponent* CharacterStat; // 캐릭터 스탯
+	UPROPERTY(VisibleAnywhere, Category = UI) class UWidgetComponent* HPBarWidget; // HP바 위젯
+
+	FOnAttackEndDelegate OnAttackEnd;
+
+	float GetAttackRange() const;
+	float GetAttackRadius() const;
+
+	void SetCharacterState(ECharacterState NewState);
+	ECharacterState GetCharacterState() const;
+
+protected:
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+		float AttackRange;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+		float AttackRadius;
+
+	UPROPERTY(Transient, VisibleInstanceOnly, BlueprintReadOnly, Category = State, Meta = (AllowPrivateAccess = true))
+		ECharacterState CurrentState;
+
+	virtual void RunAI();
+	virtual void SetDead();
 };
