@@ -23,7 +23,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent & OwnerComp, uint8 * Nod
 
 	UWorld* World = ControllingPawn->GetWorld();
 	FVector Center = ControllingPawn->GetActorLocation(); // 폰의 위치 좌표
-	float DetectRadius = 300.0f;
+	float DetectRadius = 1000.0f; // 300
 
 	if (World == nullptr)
 		return;

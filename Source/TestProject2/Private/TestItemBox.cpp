@@ -12,9 +12,11 @@ ATestItemBox::ATestItemBox()
 
 	Trigger = CreateDefaultSubobject<UBoxComponent>(TEXT("TRIGGER"));
 	Box = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BOX"));
+	Effect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EFFECT"));
 
 	RootComponent = Trigger;
 	Box->SetupAttachment(RootComponent);
+	Effect->SetupAttachment(RootComponent);
 
 	Trigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
 	Trigger->SetCollisionProfileName(TEXT("ItemBox"));
@@ -26,6 +28,15 @@ ATestItemBox::ATestItemBox()
 		Box->SetStaticMesh(SM_BOX.Object);
 	}
 	Box->SetRelativeLocation(FVector(0.0f, -3.5f, -30.0f));
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem>
+		P_CHESTOPEN(TEXT("/Game/InfinityBladeGrassLands/Effects/FX_Treasure/Chest/P_TreasureChest_Open_Mesh.P_TreasureChest_Open_Mesh"));
+
+	if (P_CHESTOPEN.Succeeded())
+	{
+		Effect->SetTemplate(P_CHESTOPEN.Object);
+		Effect->bAutoActivate = false;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -58,7 +69,15 @@ void ATestItemBox::OnCharacterOverlap(UPrimitiveComponent * OverlappedComp, AAct
 	if (TestCharacter != nullptr)
 	{
 		// TODO : 아이템 접촉시 아이템 습득 구현필요 (HP 회복, 총알 개수 증가 등)
+		TestCharacter->SetHPPlus(50.0f);
+		Effect->Activate(true);
+		Box->SetHiddenInGame(true, true);
+		SetActorEnableCollision(false);
+		Effect->OnSystemFinished.AddDynamic(this, &ATestItemBox::OnEffectFinished);
 	}
 
 }
-
+void ATestItemBox::OnEffectFinished(UParticleSystemComponent* PSystem)
+{
+	Destroy();
+}

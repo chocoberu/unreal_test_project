@@ -6,6 +6,8 @@
 #include "TestBaseCharacter.h"
 #include "TestBossCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnTeleportEndDelegate);
+//DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 /**
  * 
  */
@@ -32,6 +34,9 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	void Attack();
+	void Teleport(FVector TargetPos);
+
+	FOnTeleportEndDelegate OnTeleportEnd;
 
 protected:
 	virtual void RunAI();

@@ -40,8 +40,8 @@ ATestBossCharacter::ATestBossCharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	// 공격 범위 관련
-	AttackRange = 200.0f;
-	AttackRadius = 100.0f;
+	AttackRange = 500.0f; //200
+	AttackRadius = 1000.0f; // 100
 }
 void ATestBossCharacter::BeginPlay()
 {
@@ -105,6 +105,10 @@ void ATestBossCharacter::Attack()
 
 	TestAnim->PlayAttackingMontage();
 	IsAttacking = true;
+}
+void ATestBossCharacter::Teleport(FVector TargetPos)
+{
+	SetActorLocation(TargetPos);
 }
 void ATestBossCharacter::RunAI()
 {

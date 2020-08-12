@@ -41,6 +41,7 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	void SetHPPlus(float PlusHP);
 	void SetCharacterState(ECharacterState NewState);
 	ECharacterState GetCharacterState() const;
 

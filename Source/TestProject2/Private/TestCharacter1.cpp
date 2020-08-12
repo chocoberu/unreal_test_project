@@ -220,6 +220,11 @@ float ATestCharacter1::TakeDamage(float DamageAmount, FDamageEvent const & Damag
 	return FinalDamage;
 }
 
+void ATestCharacter1::SetHPPlus(float PlusHP)
+{
+	CharacterStat->SetDamage(-PlusHP);
+}
+
 void ATestCharacter1::SetCharacterState(ECharacterState NewState)
 {
 	TCHECK(CurrentState != NewState);
