@@ -8,14 +8,13 @@
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-const FName ATestBossAIController::HomePosKey(TEXT("HomePos"));
-const FName ATestBossAIController::PatrolPosKey(TEXT("PatrolPos"));
+const FName ATestBossAIController::TargetPosKey(TEXT("TargetPos"));
 const FName ATestBossAIController::TargetKey(TEXT("Target"));
 
 ATestBossAIController::ATestBossAIController()
 {
 	static ConstructorHelpers::FObjectFinder<UBlackboardData>
-		BBOBJECT(TEXT("/Game/AI/BB_TestEnemy.BB_TestEnemy"));
+		BBOBJECT(TEXT("/Game/AI/BB_TestBoss.BB_TestBoss"));
 	if (BBOBJECT.Succeeded())
 	{
 		BBAsset = BBOBJECT.Object;
@@ -37,7 +36,6 @@ void ATestBossAIController::RunAI()
 {
 	if (UseBlackboard(BBAsset, Blackboard))
 	{
-		Blackboard->SetValueAsVector(HomePosKey, GetPawn()->GetActorLocation());
 		if (!RunBehaviorTree(BTAsset))
 		{
 			TLOG(Error, TEXT("AIController couldn't run behavior tree!"));

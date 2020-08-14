@@ -19,8 +19,7 @@ public:
 
 	virtual void OnPossess(APawn* InPawn) override;
 
-	static const FName HomePosKey; // NPC 생성 위치를 찾기위한 키
-	static const FName PatrolPosKey; // NPC의 순찰 위치를 찾기위한 키
+	static const FName TargetPosKey; // 
 	static const FName TargetKey; // 타겟을 찾기위한 키
 
 	void RunAI(); // AI 가동

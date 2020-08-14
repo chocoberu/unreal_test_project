@@ -26,14 +26,14 @@ EBTNodeResult::Type UBTTask_Teleport::ExecuteTask(UBehaviorTreeComponent & Owner
 	}
 
 	TLOG(Warning, TEXT("Target"));
-	auto Target = Cast<ATestCharacter1>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetKey"));
+	auto Target = Cast<ATestCharacter1>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 	if (Target == nullptr)
 	{
 		TLOG(Error, TEXT("target not found"));
 		return EBTNodeResult::Failed;
 	}
 	
-	FVector TargetPos = Target->GetActorLocation();
+	FVector TargetPos = Target->GetActorLocation() - 5.0f;
 
 	TLOG(Warning, TEXT("Location (%f, %f, %f)"),TargetPos.X, TargetPos.Y, TargetPos.Z);
 	TestBoss->Teleport(TargetPos);

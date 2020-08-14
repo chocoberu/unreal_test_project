@@ -3,6 +3,7 @@
 
 #include "BTService_Detect.h"
 #include "TestAIController.h"
+#include "TestBossAIController.h"
 #include "TestCharacter1.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "DrawDebugHelpers.h"
@@ -20,10 +21,11 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent & OwnerComp, uint8 * Nod
 	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn(); // AIController가 조종하는 폰
 	if (ControllingPawn == nullptr)
 		return;
+	
 
 	UWorld* World = ControllingPawn->GetWorld();
 	FVector Center = ControllingPawn->GetActorLocation(); // 폰의 위치 좌표
-	float DetectRadius = 1000.0f; // 300
+	float DetectRadius = 2000.0f; // 300
 
 	if (World == nullptr)
 		return;
@@ -41,13 +43,13 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent & OwnerComp, uint8 * Nod
 
 	if (bResult)
 	{
-		OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestAIController::TargetKey, nullptr); // 타겟을 초기화
+		OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestBossAIController::TargetKey, nullptr); // 타겟을 초기화
 		for (auto& OverlapResult : OverlapResults) // 충돌한 객체들 중에서 플레이어를 찾기
 		{
 			ATestCharacter1* ATestCharacter = Cast<ATestCharacter1>(OverlapResult.GetActor());
 			if (ATestCharacter && ATestCharacter->GetController()->IsPlayerController())
 			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestAIController::TargetKey, ATestCharacter); // 타겟을 플레이어로 설정
+				OwnerComp.GetBlackboardComponent()->SetValueAsObject(ATestBossAIController::TargetKey, ATestCharacter); // 타겟을 플레이어로 설정
 
 				// DrawDebug 
 				DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Green, false, 0.2f);
