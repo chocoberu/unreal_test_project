@@ -33,7 +33,16 @@ EBTNodeResult::Type UBTTask_Teleport::ExecuteTask(UBehaviorTreeComponent & Owner
 		return EBTNodeResult::Failed;
 	}
 	
-	FVector TargetPos = Target->GetActorLocation() - 5.0f;
+	// 플레이어 뒤쪽으로 텔레포트
+
+	FVector TargetPos = Target->GetActorLocation();
+	FVector Offset = Target->GetActorForwardVector();
+	TLOG(Warning, TEXT("Location (%f, %f, %f)"), TargetPos.X, TargetPos.Y, TargetPos.Z);
+	TLOG(Warning, TEXT("Offset (%f, %f, %f)"), Offset.X, Offset.Y, Offset.Z);
+	Offset.X *= 300.0f;
+	Offset.Y *= 300.0f;
+	TargetPos -= Offset;
+	TLOG(Warning, TEXT("Offset (%f, %f, %f)"), Offset.X, Offset.Y, Offset.Z);
 
 	TLOG(Warning, TEXT("Location (%f, %f, %f)"),TargetPos.X, TargetPos.Y, TargetPos.Z);
 	TestBoss->Teleport(TargetPos);
