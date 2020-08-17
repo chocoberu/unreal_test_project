@@ -46,8 +46,6 @@ private:
 	UPROPERTY()
 		class ATestBossAIController* TestBossController; // 보스 캐릭터의 AIController
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 임시 애님 인스턴스
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
-		bool IsAttacking;
 
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);

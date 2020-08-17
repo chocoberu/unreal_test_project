@@ -129,7 +129,6 @@ void ATestEnemyCharacter::Attack()
 {
 	if (IsAttacking)
 		return;
-
 	TestAnim->PlayAttackingMontage();
 	IsAttacking = true;
 }

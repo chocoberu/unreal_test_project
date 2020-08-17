@@ -33,12 +33,9 @@ public:
 
 	void Attack();
 
-
 protected:
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 애님 인스턴스
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
-		bool IsAttacking;
-
+	
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
