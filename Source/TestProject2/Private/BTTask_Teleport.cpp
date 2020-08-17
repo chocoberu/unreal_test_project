@@ -34,7 +34,6 @@ EBTNodeResult::Type UBTTask_Teleport::ExecuteTask(UBehaviorTreeComponent & Owner
 	}
 	
 	// 플레이어 뒤쪽으로 텔레포트
-
 	FVector TargetPos = Target->GetActorLocation();
 	FVector Offset = Target->GetActorForwardVector();
 	TLOG(Warning, TEXT("Location (%f, %f, %f)"), TargetPos.X, TargetPos.Y, TargetPos.Z);
@@ -46,6 +45,16 @@ EBTNodeResult::Type UBTTask_Teleport::ExecuteTask(UBehaviorTreeComponent & Owner
 
 	TLOG(Warning, TEXT("Location (%f, %f, %f)"),TargetPos.X, TargetPos.Y, TargetPos.Z);
 	TestBoss->Teleport(TargetPos);
+
+	// 타겟 방향으로 회전
+	FVector LookVector = Target->GetActorLocation() - TestBoss->GetActorLocation();
+	LookVector.Z = 0.0f;
+	TLOG(Warning, TEXT("LookVector (%f,%f,%f)"), LookVector.X, LookVector.Y, LookVector.Z);
+	FRotator TargetRot = FRotationMatrix::MakeFromX(LookVector).Rotator();
+	//TestBoss->SetActorRotation(FMath::RInterpTo(TestBoss->GetActorRotation(), TargetRot, GetWorld()->GetDeltaSeconds(), 1.0f));
+	TestBoss->SetActorRotation(TargetRot);
+
+
 	return EBTNodeResult::Succeeded;
 }
 
