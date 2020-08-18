@@ -45,7 +45,7 @@ protected:
 private:
 	UPROPERTY()
 		class ATestBossAIController* TestBossController; // 보스 캐릭터의 AIController
-	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 임시 애님 인스턴스
+	UPROPERTY() class UTestBossAnimInstance* TestAnim; // 임시 애님 인스턴스
 
 	UFUNCTION()
 		void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);

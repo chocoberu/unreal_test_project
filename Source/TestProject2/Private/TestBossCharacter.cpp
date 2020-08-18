@@ -2,7 +2,7 @@
 
 
 #include "TestBossCharacter.h"
-#include "TestEnemyAnimInstance.h"
+#include "TestBossAnimInstance.h"
 #include "TestWeapon.h"
 #include "TestCharacterStatComponent.h"
 #include "Components/WidgetComponent.h"
@@ -16,13 +16,13 @@ ATestBossCharacter::ATestBossCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 메시, 애니메이션 
+	// 메시
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		SK_WARRIOR(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
 
-	// TODO : 애니메이션 파일 교체
+	// 애님 인스턴스
 	static ConstructorHelpers::FClassFinder<UAnimInstance>
-		WARRIOR_ANIM(TEXT("/Game/Animations/WarriorEnemyBlueprint.WarriorEnemyBlueprint_C"));
+		WARRIOR_ANIM(TEXT("/Game/Animations/BossBlueprint.BossBlueprint_C"));
 	if (WARRIOR_ANIM.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(WARRIOR_ANIM.Class);
@@ -79,7 +79,7 @@ void ATestBossCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	// TODO : 보스 애님 인스턴스로 교체
-	TestAnim = Cast<UTestEnemyAnimInstance>(GetMesh()->GetAnimInstance());
+	TestAnim = Cast<UTestBossAnimInstance>(GetMesh()->GetAnimInstance());
 
 	CharacterStat->SetStat(TEXT("Boss"));
 	CharacterStat->OnHPIsZero.AddLambda([this]() -> void {
