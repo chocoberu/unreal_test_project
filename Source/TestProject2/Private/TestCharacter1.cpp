@@ -264,6 +264,7 @@ void ATestCharacter1::SetCharacterState(ECharacterState NewState)
 		HPBarWidget->SetHiddenInGame(true);
 		TestAnim->SetDeadAnim();
 		bCanBeDamaged = false;
+		TestPlayerController->ShowResultUI();
 		break;
 	}
 	}

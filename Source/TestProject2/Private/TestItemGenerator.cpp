@@ -19,7 +19,7 @@ void ATestItemGenerator::BeginPlay()
 	
 	GetWorld()->GetTimerManager().SetTimer(SpawnItemBoxTimerHandle, FTimerDelegate::CreateLambda([this]()-> void {
 
-		FVector2D RandXY = FMath::RandPointInCircle(800.0f);
+		FVector2D RandXY = FMath::RandPointInCircle(780.0f);
 		GetWorld()->SpawnActor<ATestItemBox>(GetActorLocation() + FVector(RandXY, 160.0f), FRotator::ZeroRotator);
 		TLOG(Warning, TEXT("Spawn ItemBox"));
 		}), ItemBoxSpawnTime, true);
@@ -32,3 +32,8 @@ void ATestItemGenerator::Tick(float DeltaTime)
 
 }
 
+void ATestItemGenerator::ClearTimerHandle()
+{
+	GetWorldTimerManager().ClearTimer(SpawnItemBoxTimerHandle);
+	TLOG(Warning, TEXT("Clear Timer"));
+}

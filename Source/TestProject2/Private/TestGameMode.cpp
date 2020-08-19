@@ -11,6 +11,7 @@ ATestGameMode::ATestGameMode()
 	DefaultPawnClass = ATestCharacter1::StaticClass();
 	PlayerControllerClass = ATestPlayerController::StaticClass();
 	PlayerStateClass = ATestPlayerState::StaticClass();
+
 }
 
 void ATestGameMode::PostLogin(APlayerController * NewPlayer)

@@ -47,6 +47,5 @@ void UTestHUDWidget::UpdateCharacterStat()
 
 void UTestHUDWidget::UpdatePlayerState()
 {
-	//TODO
-	PlayerName->SetText(FText::FromString(TEXT("Chocobe")));
+	PlayerName->SetText(FText::FromString(TEXT("Player")));
 }

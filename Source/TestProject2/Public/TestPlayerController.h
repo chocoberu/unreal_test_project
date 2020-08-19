@@ -20,15 +20,28 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void OnPossess(APawn* aPawn) override;
 
+	void ChangeInputMode(bool bGameMode = true);
+	void ShowResultUI();
+
 	class UTestHUDWidget* GetHUDWidget() const;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
+	// UI ฐüทร
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI) TSubclassOf<class UTestHUDWidget> HUDWidgetClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI) TSubclassOf<class UTestGamePlayWidget> MenuWidgetClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI) TSubclassOf<class UTestGamePlayResultWidget> ResultWidgetClass;
 
 private:
 	UPROPERTY() class UTestHUDWidget* HUDWidget;
+
+	UPROPERTY() class UTestGamePlayWidget* MenuWidget;
+	UPROPERTY() class UTestGamePlayResultWidget* ResultWidget;
+	FInputModeGameOnly GameInputMode;
+	FInputModeUIOnly UIInputMode;
+
+	void OnGamePause();
 
 };

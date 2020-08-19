@@ -43,6 +43,8 @@ public:
 	void SetCharacterState(ECharacterState NewState);
 	ECharacterState GetCharacterState() const;
 
+	virtual void SetDead();
+
 protected:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
@@ -56,5 +58,5 @@ protected:
 		ECharacterState CurrentState;
 
 	virtual void RunAI();
-	virtual void SetDead();
+	
 };

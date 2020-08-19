@@ -32,6 +32,8 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	void Attack();
+	virtual void SetDead();
+	float GetCurrentHP();
 
 protected:
 	UPROPERTY() class UTestEnemyAnimInstance* TestAnim; // 애님 인스턴스
@@ -44,7 +46,7 @@ protected:
 	virtual void OnAssetLoadCompleted();
 
 	virtual void RunAI();
-	virtual void SetDead();
+	
 
 	FSoftObjectPath CharacterAssetToLoad = FSoftObjectPath(nullptr);
 	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;

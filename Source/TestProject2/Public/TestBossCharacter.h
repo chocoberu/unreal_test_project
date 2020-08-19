@@ -38,6 +38,8 @@ public:
 
 	FOnTeleportEndDelegate OnTeleportEnd;
 
+	
+
 protected:
 	virtual void RunAI();
 	virtual void SetDead();

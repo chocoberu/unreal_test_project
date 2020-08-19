@@ -198,6 +198,12 @@ void ATestEnemyCharacter::RunAI()
 
 void ATestEnemyCharacter::SetDead()
 {
+	//CharacterStat->SetDamage(CharacterStat->GetCurrentHP());
 	TestAnim->SetDeadAnim();
 	TestAIController->StopAI();
+}
+
+float ATestEnemyCharacter::GetCurrentHP()
+{
+	return CharacterStat->GetCurrentHP();
 }

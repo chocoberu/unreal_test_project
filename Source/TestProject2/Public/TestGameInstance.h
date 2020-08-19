@@ -34,7 +34,10 @@ public:
 	FTestCharacterData* GetTestCharacterData(FString Name);
 
 	FStreamableManager StreamableManager; // 비동기 에셋 로딩을 위한 매니저
+	void SetIsClear(bool bClear);
+	bool GetIsClear();
 private:
 	
 	UPROPERTY() class UDataTable* TestCharacterTable;
+	UPROPERTY() bool bIsClear;
 };

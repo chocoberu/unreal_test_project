@@ -10,6 +10,8 @@
 #include "TestBossAIController.h"
 #include "TestEnemyCharacterSetting.h"
 #include "TestGameInstance.h"
+#include "TestPlayerController.h"
+#include "TestEnemyCharacter.h"
 #include "DrawDebugHelpers.h"
 
 ATestBossCharacter::ATestBossCharacter()
@@ -40,8 +42,8 @@ ATestBossCharacter::ATestBossCharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	// 공격 범위 관련
-	AttackRange = 200.0f; //200
-	AttackRadius = 100.0f; // 100
+	AttackRange = 250.0f; //200
+	AttackRadius = 175.0f; // 100
 }
 void ATestBossCharacter::BeginPlay()
 {
@@ -86,6 +88,18 @@ void ATestBossCharacter::PostInitializeComponents()
 		TLOG(Warning, TEXT("Boss OnHPIsZero"));
 		TestAnim->SetDeadAnim();
 		SetActorEnableCollision(false);
+		auto TestGameInstance = Cast<UTestGameInstance>(GetWorld()->GetGameInstance());
+		TCHECK(TestGameInstance != nullptr);
+		TestGameInstance->SetIsClear(true);
+		auto TestPlayerController = Cast<ATestPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		TCHECK(TestPlayerController != nullptr);
+		TestPlayerController->ShowResultUI();
+
+		for (TObjectIterator<ATestEnemyCharacter> Iter; Iter; ++Iter)
+		{
+			if ((*Iter)->GetCurrentHP() > 0.0f)
+				(*Iter)->SetDead();
+		}
 		});
 	TestAnim->OnMontageEnded.AddDynamic(this, &ATestBossCharacter::OnAttackMontageEnded);
 	TestAnim->OnAttackHitCheck.AddUObject(this, &ATestBossCharacter::AttackCheck);
