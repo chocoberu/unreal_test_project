@@ -43,6 +43,13 @@ void ATestPlayerController::PostInitializeComponents()
 void ATestPlayerController::OnPossess(APawn * aPawn)
 {
 	Super::OnPossess(aPawn);
+
+	HUDWidget = CreateWidget<UTestHUDWidget>(this, HUDWidgetClass);
+	TCHECK(HUDWidget != nullptr);
+	HUDWidget->AddToViewport(1);
+
+	ResultWidget = CreateWidget<UTestGamePlayResultWidget>(this, ResultWidgetClass);
+	TCHECK(ResultWidget != nullptr);
 }
 
 void ATestPlayerController::ChangeInputMode(bool bGameMode)
@@ -84,13 +91,6 @@ void ATestPlayerController::BeginPlay()
 
 	FInputModeGameOnly InputMode;
 	SetInputMode(InputMode);
-
-	HUDWidget = CreateWidget<UTestHUDWidget>(this, HUDWidgetClass);
-	TCHECK(HUDWidget != nullptr);
-	HUDWidget->AddToViewport(1);
-
-	ResultWidget = CreateWidget<UTestGamePlayResultWidget>(this, ResultWidgetClass);
-	TCHECK(ResultWidget != nullptr);
 
 	auto TestPlayerState = Cast<ATestPlayerState>(PlayerState);
 	TCHECK(TestPlayerState != nullptr);
